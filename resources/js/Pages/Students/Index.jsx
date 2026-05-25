@@ -1,4 +1,5 @@
 import AppLayout from '@/Layouts/AppLayout';
+import { confirmDelete } from '@/utils/confirmDelete';
 import { Link, useForm, usePage } from '@inertiajs/react';
 import { Edit, Delete, PersonAdd } from '@mui/icons-material';
 
@@ -6,8 +7,13 @@ export default function Index({ students }) {
     const { flash } = usePage().props;
     const { delete: destroy } = useForm();
 
-    const handleDelete = (id) => {
-        if (confirm('Yakin ingin menghapus data siswa ini?')) {
+    const handleDelete = async (id) => {
+        const confirmed = await confirmDelete({
+            title: 'Hapus data siswa?',
+            text: 'Data siswa yang dihapus tidak dapat dikembalikan.',
+        });
+
+        if (confirmed) {
             destroy('/students/' + id);
         }
     };

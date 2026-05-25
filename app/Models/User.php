@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -23,6 +24,8 @@ class User extends Authenticatable
         'email',
         'password',
         'role_id',
+        'mapel_id',
+        'rombel_id',
     ];
 
     /**
@@ -41,5 +44,20 @@ class User extends Authenticatable
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function teacher(): HasOne
+    {
+        return $this->hasOne(Teacher::class);
+    }
+
+    public function mapel(): BelongsTo
+    {
+        return $this->belongsTo(Mapel::class, 'mapel_id');
+    }
+
+    public function rombel(): BelongsTo
+    {
+        return $this->belongsTo(Rombel::class, 'rombel_id');
     }
 }

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Mapel extends Model
 {
@@ -11,8 +13,13 @@ class Mapel extends Model
         'mata_pelajaran',
     ];
 
-    public function category()
+    public function category(): BelongsTo
     {
         return $this->belongsTo(CategoryMapel::class, 'category_mapels_id');
+    }
+
+    public function targets(): HasMany
+    {
+        return $this->hasMany(Target::class, 'mapel_id');
     }
 }

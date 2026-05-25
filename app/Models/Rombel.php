@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Rombel extends Model
 {
@@ -17,8 +18,9 @@ class Rombel extends Model
         return $this->hasMany(Student::class);
     }
 
-    public function waliKelas()
+    public function waliKelas(): HasOne
     {
-        return $this->hasOne(Teacher::class, 'rombel_id')->where('jenis_guru', 'Wali Kelas');
+        return $this->hasOne(User::class, 'rombel_id')
+            ->whereHas('role', fn ($query) => $query->where('slug', 'walikelas'));
     }
 }

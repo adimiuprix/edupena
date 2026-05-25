@@ -12,4 +12,9 @@ class Student extends Model
     {
         return $this->belongsTo(Rombel::class);
     }
+
+    public function studentScores()
+    {
+        return $this->hasMany(StudentScore::class);
+    }
 }

@@ -1,29 +1,28 @@
 import AppLayout from '@/Layouts/AppLayout';
+import { confirmDelete as confirmDeleteDialog } from '@/utils/confirmDelete';
 import { Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
-import { Search, Add, Edit, Delete, Warning } from '@mui/icons-material';
+import { Search, Add, Edit, Delete } from '@mui/icons-material';
 
 export default function Index({ rombels, filters }) {
     const [search, setSearch] = useState(filters.search || '');
     const { get, delete: destroy } = useForm();
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [rombelToDelete, setRombelToDelete] = useState(null);
 
     const handleSearch = (e) => {
         e.preventDefault();
         get(`/rombels?search=${search}`, { preserveState: true });
     };
 
-    const confirmDelete = (rombel) => {
-        setRombelToDelete(rombel);
-        setShowDeleteModal(true);
-    };
-
-    const handleDelete = () => {
-        destroy(`/rombels/${rombelToDelete.id}`, {
-            onSuccess: () => setShowDeleteModal(false),
-            preserveScroll: true
+    const handleDelete = async (rombel) => {
+        const confirmed = await confirmDeleteDialog({
+            title: 'Hapus Rombel?',
+            text: `Apakah Anda yakin ingin menghapus kelas ${rombel.nama_rombel}? Data yang dihapus tidak dapat dikembalikan.`,
+            confirmButtonText: 'Ya, Hapus Kelas',
         });
+
+        if (confirmed) {
+            destroy(`/rombels/${rombel.id}`, { preserveScroll: true });
+        }
     };
 
     return (
@@ -94,7 +93,7 @@ export default function Index({ rombels, filters }) {
                                                 <Edit className="w-4 h-4" />
                                             </Link>
                                             <button
-                                                onClick={() => confirmDelete(rombel)}
+                                                onClick={() => handleDelete(rombel)}
                                                 className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                                                 title="Hapus"
                                             >
@@ -115,7 +114,6 @@ export default function Index({ rombels, filters }) {
                     </table>
                 </div>
 
-                {/* Pagination (Simplified for now) */}
                 {rombels.links && rombels.links.length > 3 && (
                     <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-center gap-1">
                         {rombels.links.map((link, k) => (
@@ -123,8 +121,8 @@ export default function Index({ rombels, filters }) {
                                 key={k}
                                 href={link.url || '#'}
                                 className={`px-3 py-1 text-sm rounded-lg border ${
-                                    link.active 
-                                        ? 'bg-indigo-600 text-white border-indigo-600 font-medium' 
+                                    link.active
+                                        ? 'bg-indigo-600 text-white border-indigo-600 font-medium'
                                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                                 } ${!link.url && 'opacity-50 cursor-not-allowed'}`}
                                 dangerouslySetInnerHTML={{ __html: link.label }}
@@ -133,38 +131,6 @@ export default function Index({ rombels, filters }) {
                     </div>
                 )}
             </div>
-
-            {/* Modal Hapus */}
-            {showDeleteModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                        <div className="p-6">
-                            <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mb-4">
-                                <Warning className="w-6 h-6" />
-                            </div>
-                            <h3 className="text-xl font-bold text-slate-800 mb-2">Hapus Rombel?</h3>
-                            <p className="text-slate-600">
-                                Apakah Anda yakin ingin menghapus kelas <span className="font-semibold text-slate-800">{rombelToDelete?.nama_rombel}</span>? 
-                                Data yang dihapus tidak dapat dikembalikan.
-                            </p>
-                        </div>
-                        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
-                            <button
-                                onClick={() => setShowDeleteModal(false)}
-                                className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 transition-colors"
-                            >
-                                Batal
-                            </button>
-                            <button
-                                onClick={handleDelete}
-                                className="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-xl text-sm font-semibold transition-colors shadow-sm shadow-rose-200"
-                            >
-                                Ya, Hapus Kelas
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </AppLayout>
     );
 }

@@ -29,7 +29,7 @@ const navGroups = [
             { icon: Book,                 label: 'Mata Pelajaran',       href: '/mapels',          badge: null },
             { icon: School,               label: 'Data Guru',            href: '/teachers',        badge: null },
             { icon: MeetingRoom,          label: 'Data Rombel',          href: '/rombels',         badge: null },
-            { icon: Edit,                 label: 'Entry Nilai',          href: '/scores',          badge: 'Baru' },
+            { icon: Edit,                 label: 'Entry Nilai',          href: '/scores',          badge: null },
             { icon: Flag,                 label: 'Tujuan Pembelajaran',  href: '/targets',         badge: null },
             { icon: AssignmentTurnedIn,   label: 'KKTP',                 href: '/kktps',           badge: null },
         ],

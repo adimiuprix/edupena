@@ -1,4 +1,5 @@
 import AppLayout from '@/Layouts/AppLayout';
+import { confirmDelete } from '@/utils/confirmDelete';
 import { Link, useForm, usePage } from '@inertiajs/react';
 import { Edit, Delete, LibraryAdd } from '@mui/icons-material';
 
@@ -6,8 +7,13 @@ export default function Index({ mapels }) {
     const { flash } = usePage().props;
     const { delete: destroy } = useForm();
 
-    const handleDelete = (id) => {
-        if (confirm('Yakin ingin menghapus data mata pelajaran ini?')) {
+    const handleDelete = async (id) => {
+        const confirmed = await confirmDelete({
+            title: 'Hapus mata pelajaran?',
+            text: 'Data mata pelajaran yang dihapus tidak dapat dikembalikan.',
+        });
+
+        if (confirmed) {
             destroy('/mapels/' + id);
         }
     };

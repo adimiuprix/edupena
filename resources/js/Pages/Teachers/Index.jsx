@@ -1,4 +1,5 @@
 import AppLayout from '@/Layouts/AppLayout';
+import { confirmDelete } from '@/utils/confirmDelete';
 import { Link, useForm, usePage } from '@inertiajs/react';
 import { Edit, Delete, PersonAdd } from '@mui/icons-material';
 
@@ -6,8 +7,13 @@ export default function Index({ teachers }) {
     const { flash } = usePage().props;
     const { delete: destroy } = useForm();
 
-    const handleDelete = (id) => {
-        if (confirm('Yakin ingin menghapus data guru ini?')) {
+    const handleDelete = async (id) => {
+        const confirmed = await confirmDelete({
+            title: 'Hapus data guru?',
+            text: 'Akun login terkait juga akan dihapus. Tindakan ini tidak dapat dibatalkan.',
+        });
+
+        if (confirmed) {
             destroy('/teachers/' + id);
         }
     };
@@ -24,7 +30,7 @@ export default function Index({ teachers }) {
                 <div className="px-5 py-4 border-b border-slate-100 flex justify-between items-center">
                     <div>
                         <p className="font-bold text-slate-800">Daftar Guru</p>
-                        <p className="text-xs text-slate-400 mt-0.5">Semua data guru pengajar & wali kelas</p>
+                        <p className="text-xs text-slate-400 mt-0.5">Biodata guru dan akun sistem</p>
                     </div>
                     <Link
                         href="/teachers/create"
@@ -33,25 +39,29 @@ export default function Index({ teachers }) {
                         <PersonAdd className="w-4 h-4" /> Tambah Guru
                     </Link>
                 </div>
-                
+
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-slate-50 border-b border-slate-100">
-                                <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Guru</th>
+                                <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Nama</th>
                                 <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">NIP</th>
-                                <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Jenis</th>
-                                <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Tugas / Jabatan</th>
+                                <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Email</th>
+                                <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Role</th>
+                                <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Penugasan</th>
                                 <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {teachers.length > 0 ? teachers.map((teacher) => (
                                 <tr key={teacher.id} className="hover:bg-slate-50/50 transition-colors">
-                                    <td className="px-5 py-4 text-sm font-semibold text-slate-900">{teacher.name}</td>
+                                    <td className="px-5 py-4 text-sm font-semibold text-slate-900">
+                                        {teacher.user?.name || '-'}
+                                    </td>
                                     <td className="px-5 py-4 text-sm text-slate-600">{teacher.nip || '-'}</td>
+                                    <td className="px-5 py-4 text-sm text-slate-600">{teacher.user?.email || '-'}</td>
                                     <td className="px-5 py-4 text-sm">
-                                        {teacher.jenis_guru === 'Wali Kelas' ? (
+                                        {teacher.user?.role?.slug === 'walikelas' ? (
                                             <span className="px-2.5 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-semibold">
                                                 Wali Kelas
                                             </span>
@@ -62,13 +72,17 @@ export default function Index({ teachers }) {
                                         )}
                                     </td>
                                     <td className="px-5 py-4 text-sm text-slate-600">
-                                        {teacher.jenis_guru === 'Wali Kelas' ? (
+                                        {teacher.user?.role?.slug === 'walikelas' ? (
                                             <span className="font-medium">
-                                                {teacher.rombel?.nama_rombel || <span className="text-slate-400 italic">Belum diatur</span>}
+                                                {teacher.user?.rombel?.nama_rombel || (
+                                                    <span className="text-slate-400 italic">Belum diatur</span>
+                                                )}
                                             </span>
                                         ) : (
                                             <span className="font-medium">
-                                                {teacher.mapel?.mata_pelajaran || <span className="text-slate-400 italic">Belum diatur</span>}
+                                                {teacher.user?.mapel?.mata_pelajaran || (
+                                                    <span className="text-slate-400 italic">Belum diatur</span>
+                                                )}
                                             </span>
                                         )}
                                     </td>
@@ -91,7 +105,7 @@ export default function Index({ teachers }) {
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan="5" className="px-5 py-8 text-center text-slate-500 text-sm">
+                                    <td colSpan="6" className="px-5 py-8 text-center text-slate-500 text-sm">
                                         Belum ada data guru.
                                     </td>
                                 </tr>
@@ -103,4 +117,3 @@ export default function Index({ teachers }) {
         </AppLayout>
     );
 }
-

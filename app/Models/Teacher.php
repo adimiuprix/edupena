@@ -3,24 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Teacher extends Model
 {
     protected $fillable = [
-        'name',
+        'user_id',
         'nip',
-        'jenis_guru',
-        'mapel_id',
-        'rombel_id',
     ];
 
-    public function mapel()
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Mapel::class, 'mapel_id');
-    }
-
-    public function rombel()
-    {
-        return $this->belongsTo(Rombel::class, 'rombel_id');
+        return $this->belongsTo(User::class);
     }
 }

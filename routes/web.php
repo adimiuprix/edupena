@@ -8,6 +8,8 @@ use App\Http\Controllers\MapelController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\RombelController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\ScoreController;
+use App\Http\Controllers\TargetController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
@@ -35,5 +37,10 @@ Route::middleware('auth')->group(function () {
     
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+
+    Route::get('/scores', [ScoreController::class, 'index'])->name('scores.index');
+    Route::post('/scores', [ScoreController::class, 'store'])->name('scores.store');
+
+    Route::resource('targets', TargetController::class)->except(['show']);
 });
 

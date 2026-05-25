@@ -6,7 +6,7 @@ import {
     Assessment, 
     Description, 
     Lock, 
-    MailOutline, 
+    Email, 
     Lightbulb 
 } from '@mui/icons-material';
 
@@ -132,7 +132,7 @@ export default function Login({ status, canResetPassword }) {
                                 Alamat Email
                             </label>
                             <div className="relative">
-                                <MailOutline className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
+                                <Email className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
                                 <input
                                     id="email"
                                     type="email"
