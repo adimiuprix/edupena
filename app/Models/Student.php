@@ -22,4 +22,9 @@ class Student extends Model
     {
         return $this->hasMany(ExtracurricularAttendance::class);
     }
+
+    public function learningAchievementCriteria()
+    {
+        return $this->hasMany(LearningAchievementCriterion::class);
+    }
 }

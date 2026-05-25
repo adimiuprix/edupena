@@ -11,6 +11,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ScoreController;
 use App\Http\Controllers\TargetController;
 use App\Http\Controllers\ExtracurricularAttendanceController;
+use App\Http\Controllers\LearningAchievementCriterionController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
@@ -46,5 +47,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/attendances', [ExtracurricularAttendanceController::class, 'index'])->name('attendances.index');
     Route::post('/attendances', [ExtracurricularAttendanceController::class, 'store'])->name('attendances.store');
+
+    Route::get('/learning-achievement-criteria', [LearningAchievementCriterionController::class, 'index'])
+        ->name('learning-achievement-criteria.index');
+    Route::post('/learning-achievement-criteria', [LearningAchievementCriterionController::class, 'store'])
+        ->name('learning-achievement-criteria.store');
 });
 

@@ -31,7 +31,7 @@ const navGroups = [
             { icon: MeetingRoom,          label: 'Data Rombel',          href: '/rombels',         badge: null },
             { icon: Edit,                 label: 'Entry Nilai',          href: '/scores',          badge: null },
             { icon: Flag,                 label: 'Tujuan Pembelajaran',  href: '/targets',         badge: null },
-            { icon: AssignmentTurnedIn,   label: 'KKTP',                 href: '/kktps',           badge: null },
+            { icon: AssignmentTurnedIn,   label: 'Kriteria Ketercapaian', href: '/learning-achievement-criteria', badge: null },
         ],
     },
     {

@@ -23,4 +23,9 @@ class Rombel extends Model
         return $this->hasOne(User::class, 'rombel_id')
             ->whereHas('role', fn ($query) => $query->where('slug', 'walikelas'));
     }
+
+    public function learningAchievementThresholds()
+    {
+        return $this->hasMany(LearningAchievementThreshold::class);
+    }
 }
