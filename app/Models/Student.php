@@ -17,4 +17,9 @@ class Student extends Model
     {
         return $this->hasMany(StudentScore::class);
     }
+
+    public function extracurricularAttendances()
+    {
+        return $this->hasMany(ExtracurricularAttendance::class);
+    }
 }

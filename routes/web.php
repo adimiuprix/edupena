@@ -10,6 +10,7 @@ use App\Http\Controllers\RombelController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ScoreController;
 use App\Http\Controllers\TargetController;
+use App\Http\Controllers\ExtracurricularAttendanceController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
@@ -42,5 +43,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/scores', [ScoreController::class, 'store'])->name('scores.store');
 
     Route::resource('targets', TargetController::class)->except(['show']);
+
+    Route::get('/attendances', [ExtracurricularAttendanceController::class, 'index'])->name('attendances.index');
+    Route::post('/attendances', [ExtracurricularAttendanceController::class, 'store'])->name('attendances.store');
 });
 
