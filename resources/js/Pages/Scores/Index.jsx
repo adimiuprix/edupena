@@ -210,74 +210,102 @@ export default function Index({
                     </div>
 
                     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
-                        <table className="w-full text-sm min-w-[900px]">
+                        <table className="w-full text-sm border-collapse">
                             <thead>
-                                <tr className="bg-slate-50 border-b border-slate-100">
-                                    <th rowSpan={2} className="px-3 py-2 text-xs font-bold text-slate-500 sticky left-0 bg-slate-50 z-10">No</th>
-                                    <th rowSpan={2} className="px-3 py-2 text-xs font-bold text-slate-500 sticky left-10 bg-slate-50 z-10 min-w-[140px]">Nama</th>
+                                {/* Row 1: Grup besar */}
+                                <tr className="bg-slate-50 border-b border-slate-200 text-center text-xs font-bold">
+                                    <th rowSpan={3} className="px-3 py-2 text-slate-500 border-r border-slate-200 sticky left-0 bg-slate-50 z-10 w-10">No</th>
+                                    <th rowSpan={3} className="px-3 py-2 text-slate-500 border-r border-slate-200 sticky left-10 bg-slate-50 z-10 min-w-[160px] text-left">Nama Siswa</th>
+                                    <th colSpan={targets.length} className="px-2 py-2 text-blue-700 border-l border-slate-200 bg-blue-50">
+                                        ASESMEN SUMATIF HARIAN
+                                    </th>
+                                    <th colSpan={targets.length} className="px-2 py-2 text-orange-700 border-l border-slate-200 bg-orange-50">
+                                        ASESMEN SUMATIF AKHIR SEMESTER
+                                    </th>
+                                    <th colSpan={targets.length} className="px-2 py-2 text-indigo-700 border-l border-slate-200 bg-indigo-50">
+                                        Nilai Rapor Tiap TP
+                                    </th>
+                                    <th rowSpan={3} className="px-3 py-2 text-emerald-700 border-l border-slate-200 bg-emerald-50 min-w-[70px]">
+                                        Nilai Rapor Mapel
+                                    </th>
+                                </tr>
+                                {/* Row 2: TP label per grup */}
+                                <tr className="bg-slate-50 border-b border-slate-100 text-center text-[11px] font-bold">
                                     {targets.map((t) => (
-                                        <th key={t.id} colSpan={3} className="px-2 py-2 text-xs font-bold text-indigo-600 border-l border-slate-100 text-center">
+                                        <th key={`sh-${t.id}`} className="px-2 py-1 border-l border-slate-100 text-blue-600 bg-blue-50 w-14">
                                             TP{t.nomor_tp}
                                         </th>
                                     ))}
-                                    <th rowSpan={2} className="px-3 py-2 text-xs font-bold text-emerald-700 border-l border-slate-200">Rapor</th>
-                                </tr>
-                                <tr className="bg-slate-50/80 border-b border-slate-100 text-[10px] text-slate-500">
                                     {targets.map((t) => (
-                                        <Fragment key={t.id}>
-                                            <th className="px-1 py-1 border-l border-slate-100">SH</th>
-                                            <th className="px-1 py-1">SA</th>
-                                            <th className="px-1 py-1 text-indigo-600">TP</th>
-                                        </Fragment>
+                                        <th key={`sa-${t.id}`} className="px-2 py-1 border-l border-slate-100 text-orange-600 bg-orange-50 w-14">
+                                            TP{t.nomor_tp}
+                                        </th>
+                                    ))}
+                                    {targets.map((t) => (
+                                        <th key={`tp-${t.id}`} className="px-2 py-1 border-l border-slate-100 text-indigo-600 bg-indigo-50 w-14">
+                                            TP{t.nomor_tp}
+                                        </th>
                                     ))}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                {students.map((student, idx) => (
-                                    <tr key={student.id} className="hover:bg-slate-50/50">
-                                        <td className="px-3 py-2 sticky left-0 bg-white">{idx + 1}</td>
-                                        <td className="px-3 py-2 font-medium sticky left-10 bg-white">{student.nama_lengkap}</td>
-                                        {targets.map((t) => {
-                                            const key = `${student.id}_${t.id}`;
-                                            const cell = grid[key] || { sumatif_harian: '', sumatif_akhir: '' };
-                                            const raporTp = calcTpRapor(cell.sumatif_harian, cell.sumatif_akhir);
-                                            return (
-                                                <Fragment key={t.id}>
-                                                    <td className="px-1 py-1 border-l border-slate-50">
+                                {students.map((student, idx) => {
+                                    const tpRaporValues = targets.map((t) => {
+                                        const key = `${student.id}_${t.id}`;
+                                        const cell = grid[key] || { sumatif_harian: '', sumatif_akhir: '' };
+                                        return calcTpRapor(cell.sumatif_harian, cell.sumatif_akhir);
+                                    });
+                                    return (
+                                        <tr key={student.id} className="hover:bg-slate-50/50">
+                                            <td className="px-3 py-2 text-center text-slate-500 border-r border-slate-100 sticky left-0 bg-white z-10">{idx + 1}</td>
+                                            <td className="px-3 py-2 font-semibold text-slate-800 border-r border-slate-100 sticky left-10 bg-white z-10">{student.nama_lengkap}</td>
+                                            {/* Kolom Sumatif Harian */}
+                                            {targets.map((t) => {
+                                                const key = `${student.id}_${t.id}`;
+                                                const cell = grid[key] || { sumatif_harian: '', sumatif_akhir: '' };
+                                                return (
+                                                    <td key={`sh-${t.id}`} className="px-1 py-1.5 border-l border-slate-100 bg-blue-50/30">
                                                         <input
-                                                            type="number"
-                                                            min="0"
-                                                            max="100"
+                                                            type="number" min="0" max="100"
                                                             value={cell.sumatif_harian}
                                                             onChange={(e) => updateCell(student.id, t.id, 'sumatif_harian', e.target.value)}
-                                                            className="w-14 px-1 py-1 text-center rounded-lg border border-slate-200 text-xs"
+                                                            className="w-14 px-1 py-1 text-center rounded-md border border-slate-200 text-xs focus:ring-1 focus:ring-blue-400 focus:border-blue-400"
                                                         />
                                                     </td>
-                                                    <td className="px-1 py-1">
+                                                );
+                                            })}
+                                            {/* Kolom Sumatif Akhir */}
+                                            {targets.map((t) => {
+                                                const key = `${student.id}_${t.id}`;
+                                                const cell = grid[key] || { sumatif_harian: '', sumatif_akhir: '' };
+                                                return (
+                                                    <td key={`sa-${t.id}`} className="px-1 py-1.5 border-l border-slate-100 bg-orange-50/30">
                                                         <input
-                                                            type="number"
-                                                            min="0"
-                                                            max="100"
+                                                            type="number" min="0" max="100"
                                                             value={cell.sumatif_akhir}
                                                             onChange={(e) => updateCell(student.id, t.id, 'sumatif_akhir', e.target.value)}
-                                                            className="w-14 px-1 py-1 text-center rounded-lg border border-slate-200 text-xs"
+                                                            className="w-14 px-1 py-1 text-center rounded-md border border-slate-200 text-xs focus:ring-1 focus:ring-orange-400 focus:border-orange-400"
                                                         />
                                                     </td>
-                                                    <td className="px-1 py-1 text-center text-xs font-semibold text-indigo-700">
-                                                        {raporTp ?? '-'}
-                                                    </td>
-                                                </Fragment>
-                                            );
-                                        })}
-                                        <td className="px-3 py-2 text-center font-bold text-emerald-700 border-l border-slate-100">
-                                            {liveMapelRapor[student.id] ?? serverMapelRapor[student.id] ?? '-'}
-                                        </td>
-                                    </tr>
-                                ))}
+                                                );
+                                            })}
+                                            {/* Kolom Nilai Rapor per TP (otomatis) */}
+                                            {tpRaporValues.map((val, i) => (
+                                                <td key={`tp-${targets[i].id}`} className="px-1 py-1.5 text-center text-xs font-bold border-l border-slate-100 bg-indigo-50/40 text-indigo-700">
+                                                    {val ?? '-'}
+                                                </td>
+                                            ))}
+                                            {/* Nilai Rapor Mapel */}
+                                            <td className="px-3 py-2 text-center font-bold text-emerald-700 border-l border-slate-200 bg-emerald-50/40">
+                                                {liveMapelRapor[student.id] ?? serverMapelRapor[student.id] ?? '-'}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
-                    <p className="mt-2 text-[11px] text-slate-400">SH = Sumatif Harian · SA = Sumatif Akhir Semester · TP = Nilai Rapor per TP</p>
+                    <p className="mt-2 text-[11px] text-slate-400">Nilai Rapor per TP = 60% Sumatif Harian + 40% Sumatif Akhir · Nilai Rapor Mapel = Rata-rata semua TP</p>
                 </form>
             )}
         </AppLayout>

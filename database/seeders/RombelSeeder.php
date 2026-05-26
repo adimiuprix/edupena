@@ -11,19 +11,19 @@ class RombelSeeder extends Seeder
     {
         $tahunAjaran = '2025/2026';
 
-        // Buat kelas 1 sampai 6, masing-masing ada 2 rombel (A dan B)
-        for ($tingkat = 1; $tingkat <= 6; $tingkat++) {
-            foreach (['A', 'B'] as $nama) {
-                Rombel::firstOrCreate(
-                    [
-                        'tingkat' => $tingkat,
-                        'nama_rombel' => $nama,
-                    ],
-                    [
-                        'tahun_ajaran' => $tahunAjaran
-                    ]
-                );
-            }
+        // Buat kelas 1 sampai 6, masing-masing satu rombel dengan nama buah
+        $fruits = ['Apel', 'Jeruk', 'Mangga', 'Pisang', 'Anggur', 'Melon'];
+        foreach (range(1, 6) as $tingkat) {
+            $nama = $fruits[$tingkat - 1];
+            Rombel::firstOrCreate(
+                [
+                    'tingkat' => $tingkat,
+                    'nama_rombel' => $nama,
+                ],
+                [
+                    'tahun_ajaran' => $tahunAjaran,
+                ]
+            );
         }
     }
 }

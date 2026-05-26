@@ -9,7 +9,7 @@ class ScoreCalculator
     public const AKHIR_WEIGHT = 0.4;
 
     /**
-     * Nilai rapor per TP: 60% sumatif harian + 40% sumatif akhir (logika eraport.xlsm).
+     * Nilai rapor per TP: 60% sumatif harian + 40% sumatif akhir (eraport.xlsm).
      */
     public static function nilaiRaporTp(?int $sumatifHarian, ?int $sumatifAkhir): ?float
     {

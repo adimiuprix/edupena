@@ -86,6 +86,27 @@ class ExtracurricularAttendanceController extends Controller
         $defaultSemester = $this->normalizeSemester(Setting::where('key', 'semester_aktif')->value('value'));
         $semester = $this->normalizeSemester($request->get('semester')) ?: $defaultSemester;
         $rombelId = $request->integer('rombel_id') ?: null;
+
+        $students = $rombelId
+            ? Student::where('rombel_id', $rombelId)->orderBy('nama_lengkap')->get(['id', 'nama_lengkap'])
+            : collect();
+
+        $records = [];
+        if ($rombelId && $semester) {
+            $existing = ExtracurricularAttendance::where('semester', $semester)
+                ->whereIn('student_id', $students->pluck('id'))
+                ->get();
+            foreach ($existing as $rec) {
+                $records[$rec->student_id] = [
+                    'extracurricular_category_id' => $rec->extracurricular_category_id,
+                    'predikat' => $rec->predikat,
+                    'sakit' => $rec->sakit,
+                    'ijin' => $rec->ijin,
+                    'alpa' => $rec->alpa,
+                ];
+            }
+        }
+
         $payload = [
             'rombels' => $rombels,
             'categories' => $categories,
@@ -98,8 +119,8 @@ class ExtracurricularAttendanceController extends Controller
                 'rombel_id' => $rombelId,
                 'semester' => $semester,
             ],
-            'students' => [],
-            'records' => [],
+            'students' => $students,
+            'records' => $records,
             'canEdit' => true,
         ];
         return Inertia::render('Attendances/Create', $payload);

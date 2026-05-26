@@ -11,11 +11,6 @@ class ExtracurricularCategorySeeder extends Seeder
     {
         $categories = [
             ['nama_ekskul' => 'Pramuka', 'jenis' => 'wajib'],
-            ['nama_ekskul' => 'PMR', 'jenis' => 'pilihan'],
-            ['nama_ekskul' => 'Paskibra', 'jenis' => 'pilihan'],
-            ['nama_ekskul' => 'Rohis', 'jenis' => 'pilihan'],
-            ['nama_ekskul' => 'Seni Tari', 'jenis' => 'pilihan'],
-            ['nama_ekskul' => 'Futsal', 'jenis' => 'pilihan'],
         ];
 
         foreach ($categories as $category) {

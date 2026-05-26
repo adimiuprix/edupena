@@ -1,8 +1,7 @@
+import React, { useState, useEffect } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
-import InputLabel from '@/Components/InputLabel';
-import { router, useForm, usePage } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
-import { Save } from '@mui/icons-material';
+import { router, useForm, usePage, Link } from '@inertiajs/react';
+import { EditNote } from '@mui/icons-material';
 
 export default function Index({
     rombels,
@@ -32,7 +31,6 @@ export default function Index({
     };
 
     const [grid, setGrid] = useState(() => buildGrid(records));
-    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         setGrid(buildGrid(records));
@@ -47,40 +45,14 @@ export default function Index({
         router.get('/attendances', filterForm.data, { preserveState: false });
     };
 
-    const updateRow = (studentId, field, value) => {
-        setGrid((prev) => ({
-            ...prev,
-            [studentId]: { ...prev[studentId], [field]: value },
-        }));
+    const getEkskulName = (id) => {
+        if (!id) return '-';
+        const cat = categories.find(c => c.id == id);
+        return cat ? cat.nama_ekskul : '-';
     };
-
-    const handleSave = (e) => {
-        e.preventDefault();
-        const payload = students.map((s) => ({
-            student_id: s.id,
-            extracurricular_category_id: grid[s.id]?.extracurricular_category_id || null,
-            predikat: grid[s.id]?.predikat || null,
-            sakit: Number(grid[s.id]?.sakit ?? 0),
-            ijin: Number(grid[s.id]?.ijin ?? 0),
-            alpa: Number(grid[s.id]?.alpa ?? 0),
-        }));
-
-        setSaving(true);
-        router.post('/attendances', {
-            rombel_id: filterForm.data.rombel_id,
-            semester: filterForm.data.semester,
-            records: payload,
-        }, {
-            preserveScroll: true,
-            onFinish: () => setSaving(false),
-        });
-    };
-
-    const wajibCategories = categories.filter((c) => c.jenis === 'wajib');
-    const pilihanCategories = categories.filter((c) => c.jenis === 'pilihan');
 
     return (
-        <AppLayout title="Absensi & Ekskul">
+        <AppLayout title="Data Absensi & Ekskul">
             {flash?.message && (
                 <div className="mb-4 p-4 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl">
                     {flash.message}
@@ -88,13 +60,18 @@ export default function Index({
             )}
 
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-6">
-                <p className="font-bold text-slate-800 mb-1">Filter Data</p>
-                <p className="text-xs text-slate-500 mb-4">
-                    Semester aktif: {global_settings?.semester_aktif || '-'} · Satu ekskul per siswa per semester
-                </p>
+                <div className="flex justify-between items-center mb-4">
+                    <p className="font-bold text-slate-800">Filter Data</p>
+                    <Link
+                        href={`/attendances/create?rombel_id=${filterForm.data.rombel_id}&semester=${filterForm.data.semester}`}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 px-4 rounded-xl transition-colors flex items-center gap-2"
+                    >
+                        <EditNote className="w-4 h-4" /> Tambah Data
+                    </Link>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                     <div>
-                        <InputLabel value="Rombongan Belajar" />
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Rombongan Belajar</label>
                         <select
                             value={filterForm.data.rombel_id}
                             onChange={(e) => filterForm.setData('rombel_id', e.target.value)}
@@ -109,7 +86,7 @@ export default function Index({
                         </select>
                     </div>
                     <div>
-                        <InputLabel value="Semester" />
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Semester</label>
                         <select
                             value={filterForm.data.semester}
                             onChange={(e) => filterForm.setData('semester', e.target.value)}
@@ -121,19 +98,21 @@ export default function Index({
                             ))}
                         </select>
                     </div>
+                    <div>
                         <button
                             type="button"
-                            onClick={() => router.get('/attendances/create')}
-                            className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-xl ml-2"
+                            onClick={applyFilters}
+                            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl w-full"
                         >
-                            Tambah Data
+                            Tampilkan Data
                         </button>
+                    </div>
                 </div>
             </div>
 
             {!filters.rombel_id || !filters.semester ? (
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-amber-800 text-sm">
-                    Pilih rombel dan semester untuk mengisi data ekskul dan absensi.
+                    Pilih rombel dan semester terlebih dulu.
                 </div>
             ) : categories.length === 0 ? (
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-amber-800 text-sm">
@@ -144,110 +123,56 @@ export default function Index({
                     Tidak ada siswa di rombel ini.
                 </div>
             ) : (
-                <form onSubmit={handleSave}>
-                    <div className="mb-4 flex justify-between items-center">
-                        <p className="text-sm text-slate-600">
-                            Isi <strong>satu ekskul</strong>, predikat, dan jumlah hari absensi per siswa.
-                        </p>
-                        <button
-                            type="submit"
-                            disabled={saving || !canEdit}
-                            className="inline-flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl disabled:opacity-60"
-                        >
-                            <Save className="w-4 h-4" />
-                            {saving ? 'Menyimpan...' : 'Simpan Data'}
-                        </button>
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="px-5 py-4 border-b border-slate-100 flex justify-between items-center">
+                        <div>
+                            <p className="font-bold text-slate-800">Daftar Absensi & Ekstrakurikuler</p>
+                            <p className="text-xs text-slate-400 mt-0.5">Satu ekskul per siswa per semester</p>
+                        </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
-                        <table className="w-full text-sm min-w-[800px]">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
                             <thead>
                                 <tr className="bg-slate-50 border-b border-slate-100">
-                                    <th className="px-4 py-3 text-xs font-bold text-slate-500">No</th>
-                                    <th className="px-4 py-3 text-xs font-bold text-slate-500 text-left">Nama Siswa</th>
-                                    <th className="px-4 py-3 text-xs font-bold text-indigo-600">Ekstrakurikuler</th>
-                                    <th className="px-4 py-3 text-xs font-bold text-indigo-600">Predikat</th>
-                                    <th className="px-4 py-3 text-xs font-bold text-rose-600">Sakit</th>
-                                    <th className="px-4 py-3 text-xs font-bold text-amber-600">Ijin</th>
-                                    <th className="px-4 py-3 text-xs font-bold text-slate-600">Alpa</th>
+                                    <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">No</th>
+                                    <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Lengkap</th>
+                                    <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Ekstrakurikuler</th>
+                                    <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Predikat</th>
+                                    <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Sakit</th>
+                                    <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Ijin</th>
+                                    <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Alpa</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                                 {students.map((student, idx) => {
                                     const row = grid[student.id] || {};
                                     return (
-                                        <tr key={student.id} className="hover:bg-slate-50/50">
-                                            <td className="px-4 py-3 text-center">{idx + 1}</td>
-                                            <td className="px-4 py-3 font-medium text-slate-900">{student.nama_lengkap}</td>
-                                            <td className="px-4 py-3">
-                                                <select
-                                                    value={row.extracurricular_category_id}
-                                                    onChange={(e) => updateRow(student.id, 'extracurricular_category_id', e.target.value)}
-                                                    className="w-full min-w-[160px] px-2 py-1.5 rounded-lg border border-slate-200 text-xs"
-                                                >
-                                                    <option value="">-- Pilih Ekskul --</option>
-                                                    {wajibCategories.length > 0 && (
-                                                        <optgroup label="Wajib">
-                                                            {wajibCategories.map((c) => (
-                                                                <option key={c.id} value={c.id}>{c.nama_ekskul}</option>
-                                                            ))}
-                                                        </optgroup>
-                                                    )}
-                                                    {pilihanCategories.length > 0 && (
-                                                        <optgroup label="Pilihan">
-                                                            {pilihanCategories.map((c) => (
-                                                                <option key={c.id} value={c.id}>{c.nama_ekskul}</option>
-                                                            ))}
-                                                        </optgroup>
-                                                    )}
-                                                </select>
+                                        <tr key={student.id} className="hover:bg-slate-50/50 transition-colors">
+                                            <td className="px-5 py-4 text-sm font-medium text-slate-700 text-center">{idx + 1}</td>
+                                            <td className="px-5 py-4 text-sm font-semibold text-slate-900">{student.nama_lengkap}</td>
+                                            <td className="px-5 py-4 text-sm text-slate-600">
+                                                {row.extracurricular_category_id ? (
+                                                    <span className="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-semibold">
+                                                        {getEkskulName(row.extracurricular_category_id)}
+                                                    </span>
+                                                ) : <span className="text-slate-400 italic text-xs">Belum diisi</span>}
                                             </td>
-                                            <td className="px-4 py-3">
-                                                <select
-                                                    value={row.predikat}
-                                                    onChange={(e) => updateRow(student.id, 'predikat', e.target.value)}
-                                                    className="w-full min-w-[120px] px-2 py-1.5 rounded-lg border border-slate-200 text-xs"
-                                                >
-                                                    <option value="">--</option>
-                                                    {predikatOptions.map((p) => (
-                                                        <option key={p} value={p}>{p}</option>
-                                                    ))}
-                                                </select>
+                                            <td className="px-5 py-4 text-sm text-center">
+                                                {row.predikat ? (
+                                                    <span className="font-semibold text-slate-700">{row.predikat}</span>
+                                                ) : <span className="text-slate-400 italic text-xs">-</span>}
                                             </td>
-                                            <td className="px-4 py-3">
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    value={row.sakit}
-                                                    onChange={(e) => updateRow(student.id, 'sakit', e.target.value)}
-                                                    className="w-16 px-2 py-1.5 text-center rounded-lg border border-slate-200 text-xs"
-                                                />
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    value={row.ijin}
-                                                    onChange={(e) => updateRow(student.id, 'ijin', e.target.value)}
-                                                    className="w-16 px-2 py-1.5 text-center rounded-lg border border-slate-200 text-xs"
-                                                />
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    value={row.alpa}
-                                                    onChange={(e) => updateRow(student.id, 'alpa', e.target.value)}
-                                                    className="w-16 px-2 py-1.5 text-center rounded-lg border border-slate-200 text-xs"
-                                                />
-                                            </td>
+                                            <td className="px-5 py-4 text-sm text-center text-slate-600">{row.sakit > 0 ? row.sakit : '-'}</td>
+                                            <td className="px-5 py-4 text-sm text-center text-slate-600">{row.ijin > 0 ? row.ijin : '-'}</td>
+                                            <td className="px-5 py-4 text-sm text-center text-slate-600">{row.alpa > 0 ? row.alpa : '-'}</td>
                                         </tr>
                                     );
                                 })}
                             </tbody>
                         </table>
                     </div>
-                </form>
+                </div>
             )}
         </AppLayout>
     );

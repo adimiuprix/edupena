@@ -39,7 +39,7 @@ export default function Index({ students }) {
                         <PersonAdd className="w-4 h-4" /> Tambah Siswa
                     </Link>
                 </div>
-                
+
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
@@ -60,7 +60,7 @@ export default function Index({ students }) {
                                     <td className="px-5 py-4 text-sm text-slate-600">
                                         {student.rombel ? (
                                             <span className="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-semibold">
-                                                {student.rombel.nama_rombel}
+                                                {student.rombel.tingkat}
                                             </span>
                                         ) : (
                                             <span className="text-slate-400 italic text-xs">Belum diatur</span>
