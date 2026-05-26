@@ -1,8 +1,9 @@
 import AppLayout from '@/Layouts/AppLayout';
 import InputLabel from '@/Components/InputLabel';
 import { Link, router, useForm, usePage } from '@inertiajs/react';
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Save } from '@mui/icons-material';
+import Column from '@/Components/Coumn';
 
 function calcTpRapor(harian, akhir) {
     if (harian === '' && akhir === '') return null;
@@ -264,14 +265,13 @@ export default function Index({
                                                 const key = `${student.id}_${t.id}`;
                                                 const cell = grid[key] || { sumatif_harian: '', sumatif_akhir: '' };
                                                 return (
-                                                    <td key={`sh-${t.id}`} className="px-1 py-1.5 border-l border-slate-100 bg-blue-50/30">
-                                                        <input
-                                                            type="number" min="0" max="100"
-                                                            value={cell.sumatif_harian}
-                                                            onChange={(e) => updateCell(student.id, t.id, 'sumatif_harian', e.target.value)}
-                                                            className="w-14 px-1 py-1 text-center rounded-md border border-slate-200 text-xs focus:ring-1 focus:ring-blue-400 focus:border-blue-400"
-                                                        />
-                                                    </td>
+                                                    <Column
+                                                        key={`sh-${t.id}`}
+                                                        max={100}
+                                                        value={cell.sumatif_harian}
+                                                        onChange={(e) => updateCell(student.id, t.id, 'sumatif_harian', e.target.value)}
+                                                        className="px-1 py-1.5 border-l border-slate-100 bg-blue-50/30"
+                                                    />
                                                 );
                                             })}
                                             {/* Kolom Sumatif Akhir */}
@@ -279,14 +279,13 @@ export default function Index({
                                                 const key = `${student.id}_${t.id}`;
                                                 const cell = grid[key] || { sumatif_harian: '', sumatif_akhir: '' };
                                                 return (
-                                                    <td key={`sa-${t.id}`} className="px-1 py-1.5 border-l border-slate-100 bg-orange-50/30">
-                                                        <input
-                                                            type="number" min="0" max="100"
-                                                            value={cell.sumatif_akhir}
-                                                            onChange={(e) => updateCell(student.id, t.id, 'sumatif_akhir', e.target.value)}
-                                                            className="w-14 px-1 py-1 text-center rounded-md border border-slate-200 text-xs focus:ring-1 focus:ring-orange-400 focus:border-orange-400"
-                                                        />
-                                                    </td>
+                                                    <Column
+                                                        key={`sa-${t.id}`}
+                                                        max={100}
+                                                        value={cell.sumatif_akhir}
+                                                        onChange={(e) => updateCell(student.id, t.id, 'sumatif_akhir', e.target.value)}
+                                                        className="px-1 py-1.5 border-l border-slate-100 bg-orange-50/30"
+                                                    />
                                                 );
                                             })}
                                             {/* Kolom Nilai Rapor per TP (otomatis) */}

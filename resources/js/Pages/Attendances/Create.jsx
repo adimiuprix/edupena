@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { router, useForm, usePage, Link } from '@inertiajs/react';
 import { Save, ArrowBack } from '@mui/icons-material';
+import Column from '@/Components/Coumn';
 
 export default function Create({
     rombels,
@@ -223,30 +224,9 @@ export default function Create({
                                                         ))}
                                                     </select>
                                                 </td>
-                                                <td className="px-5 py-4">
-                                                    <input
-                                                        type="number" min="0"
-                                                        value={row.sakit}
-                                                        onChange={e => updateRow(student.id, 'sakit', e.target.value)}
-                                                        className="w-full px-3 py-2 text-center rounded-lg border border-slate-200 bg-white text-slate-700 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors"
-                                                    />
-                                                </td>
-                                                <td className="px-5 py-4">
-                                                    <input
-                                                        type="number" min="0"
-                                                        value={row.ijin}
-                                                        onChange={e => updateRow(student.id, 'ijin', e.target.value)}
-                                                        className="w-full px-3 py-2 text-center rounded-lg border border-slate-200 bg-white text-slate-700 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors"
-                                                    />
-                                                </td>
-                                                <td className="px-5 py-4">
-                                                    <input
-                                                        type="number" min="0"
-                                                        value={row.alpa}
-                                                        onChange={e => updateRow(student.id, 'alpa', e.target.value)}
-                                                        className="w-full px-3 py-2 text-center rounded-lg border border-slate-200 bg-white text-slate-700 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors"
-                                                    />
-                                                </td>
+                                                <Column value={row.sakit} onChange={e => updateRow(student.id, 'sakit', e.target.value)} />
+                                                <Column value={row.ijin} onChange={e => updateRow(student.id, 'ijin', e.target.value)} />
+                                                <Column value={row.alpa} onChange={e => updateRow(student.id, 'alpa', e.target.value)} />
                                             </tr>
                                         );
                                     })}
