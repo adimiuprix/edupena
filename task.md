@@ -47,14 +47,14 @@ Fokus pada penambahan elemen pelengkap non-akademik dan statistik dasbor.
   - `[x]` Input ekskul + predikat (satu ekskul per siswa, master `extracurricular_categories`)
   - `[ ]` Form absensi harian/bulanan terpisah (saat ini rekap jumlah hari per semester)
 
-- `[~]` **Tahap 7. Dashboard Analytics**
+- `[x]` **Tahap 7. Dashboard Analytics**
   - `[x]` Statistik dasar di dashboard (jumlah siswa, guru, mapel, L/P, siswa terbaru)
-  - `[ ]` Statistik kehadiran di dashboard
-  - `[ ]` Peringatan nilai / data yang belum lengkap
+  - `[x]` Statistik kehadiran di dashboard
+  - `[x]` Peringatan nilai / data yang belum lengkap
 
-- `[ ]` **Tahap 8. Modul Export Data**
-  - `[ ]` Export data nilai ke Excel/CSV
-  - `[ ]` Arsip data per semester agar aman
+- `[x]` **Tahap 8. Modul Export Data**
+  - `[x]` Export data nilai ke Excel/CSV
+  - `[x]` Arsip data per semester agar aman
 
 ---
 

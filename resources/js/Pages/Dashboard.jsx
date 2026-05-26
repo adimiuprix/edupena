@@ -5,7 +5,9 @@ import {
     School, 
     Book, 
     Edit, 
-    PersonAdd 
+    PersonAdd,
+    WarningAmber,
+    EventBusy
 } from '@mui/icons-material';
 
 
@@ -63,12 +65,78 @@ export default function Dashboard({ stats, siswaTerbaru }) {
                     color="bg-amber-100 text-amber-600"
                 />
                 <StatCard
-                    icon={Edit}
-                    label="Nilai Masuk"
-                    value="-"
-                    color="bg-purple-100 text-purple-600"
-                    subtext="Belum ada data nilai"
+                    icon={WarningAmber}
+                    label="Data Belum Lengkap"
+                    value={stats.siswaTanpaNilai + stats.mapelTanpaTP}
+                    color="bg-red-100 text-red-600"
+                    subtext={`${stats.siswaTanpaNilai} siswa tanpa nilai · ${stats.mapelTanpaTP} mapel tanpa TP`}
                 />
+            </div>
+
+            {/* Attendance & Alerts Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+                <div className="lg:col-span-1 bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                    <div className="flex items-center justify-between mb-4">
+                        <p className="font-bold text-slate-800">Statistik Ketidakhadiran</p>
+                        <EventBusy className="w-5 h-5 text-slate-400" />
+                    </div>
+                    <p className="text-3xl font-extrabold text-slate-800 mb-1">{stats.totalKetidakhadiran}</p>
+                    <p className="text-xs text-slate-500 mb-5">Total hari ketidakhadiran semester ini</p>
+                    
+                    <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium text-slate-600">Sakit</span>
+                            <span className="text-sm font-bold text-slate-800 bg-slate-100 px-3 py-1 rounded-lg">{stats.totalSakit} Hari</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium text-slate-600">Izin</span>
+                            <span className="text-sm font-bold text-slate-800 bg-slate-100 px-3 py-1 rounded-lg">{stats.totalIzin} Hari</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium text-slate-600">Tanpa Keterangan</span>
+                            <span className="text-sm font-bold text-red-600 bg-red-50 px-3 py-1 rounded-lg">{stats.totalAlpa} Hari</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="lg:col-span-2 bg-amber-50 rounded-2xl border border-amber-200 p-5 flex flex-col justify-center relative overflow-hidden">
+                    <WarningAmber className="w-32 h-32 text-amber-500/10 absolute -right-6 -bottom-6" />
+                    <h3 className="font-bold text-amber-800 text-lg mb-2">Peringatan Data!</h3>
+                    
+                    <ul className="space-y-2 mt-2">
+                        {stats.siswaTanpaNilai > 0 ? (
+                            <li className="flex items-center gap-2 text-sm text-amber-900">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                Terdapat <strong>{stats.siswaTanpaNilai} siswa</strong> yang belum memiliki nilai rapor TP sama sekali.
+                            </li>
+                        ) : (
+                            <li className="flex items-center gap-2 text-sm text-emerald-700">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                Seluruh siswa sudah mulai dinilai.
+                            </li>
+                        )}
+                        
+                        {stats.mapelTanpaTP > 0 ? (
+                            <li className="flex items-center gap-2 text-sm text-amber-900">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                Ada <strong>{stats.mapelTanpaTP} mata pelajaran</strong> yang belum dikonfigurasi Tujuan Pembelajaran (TP)-nya.
+                            </li>
+                        ) : (
+                            <li className="flex items-center gap-2 text-sm text-emerald-700">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                Semua mata pelajaran sudah memiliki konfigurasi TP.
+                            </li>
+                        )}
+                    </ul>
+                    <div className="mt-4 flex gap-3 relative z-10">
+                        {stats.siswaTanpaNilai > 0 && (
+                            <Link href="/scores" className="text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold py-1.5 px-4 rounded-lg">Input Nilai</Link>
+                        )}
+                        {stats.mapelTanpaTP > 0 && (
+                            <Link href="/targets/create" className="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-1.5 px-4 rounded-lg border border-amber-300">Set Tujuan Pembelajaran</Link>
+                        )}
+                    </div>
+                </div>
             </div>
 
             {/* Bottom Row */}

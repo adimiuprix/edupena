@@ -1,6 +1,7 @@
 import AppLayout from '@/Layouts/AppLayout';
 import InputLabel from '@/Components/InputLabel';
-import { router, useForm, usePage } from '@inertiajs/react';
+import { Link, router, useForm, usePage } from '@inertiajs/react';
+import { Download } from '@mui/icons-material';
 
 export default function Index({ rombels, semesters, filters, mapels = [], students = [] }) {
     const { global_settings } = usePage().props;
@@ -12,6 +13,47 @@ export default function Index({ rombels, semesters, filters, mapels = [], studen
 
     const applyFilters = () => {
         router.get('/recaps', filterForm.data, { preserveState: false });
+    };
+
+    const handleExportCSV = () => {
+        if (!students.length) return;
+        
+        const headers = [
+            'No', 'Nama Siswa', 'NISN',
+            ...mapels.map(m => m.mata_pelajaran),
+            'Jumlah Nilai', 'Rata-rata', 'Peringkat',
+            'Sakit', 'Izin', 'Alpa',
+            'Ekstrakurikuler', 'Predikat Ekskul'
+        ];
+
+        const rows = students.map((s, index) => [
+            index + 1,
+            `"${s.nama}"`,
+            `"${s.nisn || '-'}"`,
+            ...mapels.map(m => s.mapel_grades[m.id] ?? '-'),
+            s.total_nilai,
+            s.rata_rata,
+            s.ranking,
+            s.sakit,
+            s.ijin,
+            s.alpa,
+            `"${s.ekskul}"`,
+            `"${s.predikat_ekskul}"`
+        ]);
+
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(e => e.join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `Legger_Kelas_${filters.rombel_id}_Sem_${filters.semester}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     return (
@@ -70,11 +112,19 @@ export default function Index({ rombels, semesters, filters, mapels = [], studen
                 </div>
             ) : (
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
-                    <div className="p-4 border-b border-slate-200">
-                        <h2 className="font-bold text-lg text-slate-800">Legger Kelas</h2>
-                        <p className="text-sm text-slate-500">
-                            Semester {filters.semester} · Tahun Ajaran {global_settings?.tahun_ajaran_aktif || '-'}
-                        </p>
+                    <div className="p-4 border-b border-slate-200 flex justify-between items-center">
+                        <div>
+                            <h2 className="font-bold text-lg text-slate-800">Legger Kelas</h2>
+                            <p className="text-sm text-slate-500">
+                                Semester {filters.semester} · Tahun Ajaran {global_settings?.tahun_ajaran_aktif || '-'}
+                            </p>
+                        </div>
+                        <button 
+                            onClick={handleExportCSV}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold text-sm rounded-xl border border-emerald-200 transition-colors"
+                        >
+                            <Download className="w-4 h-4" /> Export CSV
+                        </button>
                     </div>
                     <table className="w-full text-sm min-w-[1200px]">
                         <thead>
