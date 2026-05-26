@@ -46,15 +46,20 @@ class RecapController extends Controller
         }
 
         $mapels = Mapel::orderBy('mata_pelajaran')->get(['id', 'mata_pelajaran']);
-        $students = Student::with(['extracurricularAttendances' => function($q) use ($semester) {
-            $q->where('semester', $semester)->with('category');
-        }])->where('rombel_id', $rombelId)->orderBy('nama_lengkap')->get();
+        $students = Student::with([
+            'extracurricularAttendances' => function($query) use ($semester) {
+                $query->where('semester', $semester)->with('category');
+            },
+            'dailyAttendances' => function($query) use ($semester) {
+                $query->where('semester', $semester);
+            }
+        ])->where('rombel_id', $rombelId)->orderBy('nama_lengkap')->get();
 
         $studentIds = $students->pluck('id');
 
         $scores = StudentScore::whereIn('student_id', $studentIds)
-            ->whereHas('target', function ($q) use ($semester, $rombel) {
-                $q->where('semester', $semester)->where('kelas', (string)$rombel->tingkat);
+            ->whereHas('target', function ($query) use ($semester, $rombel) {
+                $query->where('semester', $semester)->where('kelas', (string)$rombel->tingkat);
             })
             ->get();
 
@@ -77,6 +82,9 @@ class RecapController extends Controller
             }
 
             $kehadiran = $student->extracurricularAttendances->first();
+            $sakit = $student->dailyAttendances->where('status', 'Sakit')->count();
+            $ijin = $student->dailyAttendances->where('status', 'Izin')->count();
+            $alpa = $student->dailyAttendances->where('status', 'Alpa')->count();
 
             $studentsData[] = [
                 'id' => $student->id,
@@ -85,9 +93,9 @@ class RecapController extends Controller
                 'mapel_grades' => $mapelGrades,
                 'total_nilai' => round($totalNilai, 2),
                 'rata_rata' => $countMapel > 0 ? round($totalNilai / $countMapel, 2) : 0,
-                'sakit' => $kehadiran?->sakit ?? 0,
-                'ijin' => $kehadiran?->ijin ?? 0,
-                'alpa' => $kehadiran?->alpa ?? 0,
+                'sakit' => $sakit,
+                'ijin' => $ijin,
+                'alpa' => $alpa,
                 'ekskul' => $kehadiran?->category?->name ?? '-',
                 'predikat_ekskul' => $kehadiran?->predikat ?? '-',
             ];

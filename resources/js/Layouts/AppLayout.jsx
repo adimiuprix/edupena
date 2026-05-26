@@ -17,7 +17,8 @@ import {
     Search,
     Notifications,
     ArrowDropDown,
-    AccountCircle
+    AccountCircle,
+    FactCheck
 } from '@mui/icons-material';
 
 const navGroups = [
@@ -39,6 +40,7 @@ const navGroups = [
         items: [
             { icon: Assignment, label: 'Rapor Siswa', href: '/reports', badge: null },
             { icon: Analytics, label: 'Rekap Nilai', href: '/recaps', badge: null },
+            { icon: FactCheck, label: 'Absensi Harian', href: '/daily-attendances', badge: 'Baru' },
             { icon: CalendarMonth, label: 'Absensi & Ekskul', href: '/attendances', badge: null },
         ],
     },

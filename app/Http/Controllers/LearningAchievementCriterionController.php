@@ -66,7 +66,7 @@ class LearningAchievementCriterionController extends Controller
         foreach ($students as $student) {
             foreach ($mapels as $mapel) {
                 $record = $existing->first(
-                    fn ($c) => $c->student_id === $student->id && $c->mapel_id === $mapel->id
+                    fn ($criterion) => $criterion->student_id === $student->id && $criterion->mapel_id === $mapel->id
                 );
 
                 $key = "{$student->id}_{$mapel->id}";

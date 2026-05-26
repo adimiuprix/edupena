@@ -126,6 +126,10 @@ class ReportController extends Controller
             ->with('category')
             ->where('semester', $semester)
             ->first();
+            
+        $sakit = $student->dailyAttendances()->where('semester', $semester)->where('status', 'Sakit')->count();
+        $ijin = $student->dailyAttendances()->where('semester', $semester)->where('status', 'Izin')->count();
+        $alpa = $student->dailyAttendances()->where('semester', $semester)->where('status', 'Alpa')->count();
 
         // Data Sekolah
         $settings = Setting::pluck('value', 'key')->toArray();
@@ -136,6 +140,11 @@ class ReportController extends Controller
             'semester' => $semester,
             'reportData' => $reportData,
             'kehadiran' => $kehadiran,
+            'absensi' => [
+                'sakit' => $sakit,
+                'ijin' => $ijin,
+                'alpa' => $alpa,
+            ],
             'settings' => $settings,
         ]);
     }

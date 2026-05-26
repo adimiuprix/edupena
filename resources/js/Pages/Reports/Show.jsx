@@ -1,7 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { useEffect } from 'react';
 
-export default function Show({ student, rombel, semester, reportData, kehadiran, settings }) {
+export default function Show({ student, rombel, semester, reportData, kehadiran, absensi, settings }) {
     
     useEffect(() => {
         // Hapus margin body bawaan browser untuk print
@@ -135,15 +135,15 @@ export default function Show({ student, rombel, semester, reportData, kehadiran,
                             <tbody>
                                 <tr>
                                     <td className="border border-black p-2 w-32">Sakit</td>
-                                    <td className="border border-black p-2 text-center">{kehadiran?.sakit || '-'} hari</td>
+                                    <td className="border border-black p-2 text-center">{absensi?.sakit || '-'} hari</td>
                                 </tr>
                                 <tr>
                                     <td className="border border-black p-2">Izin</td>
-                                    <td className="border border-black p-2 text-center">{kehadiran?.ijin || '-'} hari</td>
+                                    <td className="border border-black p-2 text-center">{absensi?.ijin || '-'} hari</td>
                                 </tr>
                                 <tr>
                                     <td className="border border-black p-2">Tanpa Keterangan</td>
-                                    <td className="border border-black p-2 text-center">{kehadiran?.alpa || '-'} hari</td>
+                                    <td className="border border-black p-2 text-center">{absensi?.alpa || '-'} hari</td>
                                 </tr>
                             </tbody>
                         </table>

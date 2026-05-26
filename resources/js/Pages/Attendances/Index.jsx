@@ -22,9 +22,6 @@ export default function Index({
             g[s.id] = {
                 extracurricular_category_id: row.extracurricular_category_id ?? '',
                 predikat: row.predikat ?? '',
-                sakit: row.sakit ?? 0,
-                ijin: row.ijin ?? 0,
-                alpa: row.alpa ?? 0,
             };
         });
         return g;
@@ -139,9 +136,6 @@ export default function Index({
                                     <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Lengkap</th>
                                     <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Ekstrakurikuler</th>
                                     <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Predikat</th>
-                                    <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Sakit</th>
-                                    <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Ijin</th>
-                                    <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Alpa</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -163,9 +157,6 @@ export default function Index({
                                                     <span className="font-semibold text-slate-700">{row.predikat}</span>
                                                 ) : <span className="text-slate-400 italic text-xs">-</span>}
                                             </td>
-                                            <td className="px-5 py-4 text-sm text-center text-slate-600">{row.sakit > 0 ? row.sakit : '-'}</td>
-                                            <td className="px-5 py-4 text-sm text-center text-slate-600">{row.ijin > 0 ? row.ijin : '-'}</td>
-                                            <td className="px-5 py-4 text-sm text-center text-slate-600">{row.alpa > 0 ? row.alpa : '-'}</td>
                                         </tr>
                                     );
                                 })}

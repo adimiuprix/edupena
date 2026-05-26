@@ -27,4 +27,9 @@ class Student extends Model
     {
         return $this->hasMany(LearningAchievementCriterion::class);
     }
+
+    public function dailyAttendances()
+    {
+        return $this->hasMany(DailyAttendance::class);
+    }
 }

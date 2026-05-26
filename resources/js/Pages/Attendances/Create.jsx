@@ -23,9 +23,6 @@ export default function Create({
             g[s.id] = {
                 extracurricular_category_id: row.extracurricular_category_id ?? '',
                 predikat: row.predikat ?? '',
-                sakit: row.sakit ?? 0,
-                ijin: row.ijin ?? 0,
-                alpa: row.alpa ?? 0,
             };
         });
         return g;
@@ -51,9 +48,6 @@ export default function Create({
             student_id: s.id,
             extracurricular_category_id: grid[s.id]?.extracurricular_category_id || null,
             predikat: grid[s.id]?.predikat || null,
-            sakit: Number(grid[s.id]?.sakit ?? 0),
-            ijin: Number(grid[s.id]?.ijin ?? 0),
-            alpa: Number(grid[s.id]?.alpa ?? 0),
         }));
 
         setSaving(true);
@@ -177,9 +171,6 @@ export default function Create({
                                         <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Siswa</th>
                                         <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider w-56">Ekstrakurikuler</th>
                                         <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-36">Predikat</th>
-                                        <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-24">Sakit</th>
-                                        <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-24">Ijin</th>
-                                        <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-24">Alpa</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
@@ -224,9 +215,6 @@ export default function Create({
                                                         ))}
                                                     </select>
                                                 </td>
-                                                <Column value={row.sakit} onChange={e => updateRow(student.id, 'sakit', e.target.value)} />
-                                                <Column value={row.ijin} onChange={e => updateRow(student.id, 'ijin', e.target.value)} />
-                                                <Column value={row.alpa} onChange={e => updateRow(student.id, 'alpa', e.target.value)} />
                                             </tr>
                                         );
                                     })}
