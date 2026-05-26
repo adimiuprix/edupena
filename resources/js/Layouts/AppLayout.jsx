@@ -40,7 +40,7 @@ const navGroups = [
         items: [
             { icon: Assignment, label: 'Rapor Siswa', href: '/reports', badge: null },
             { icon: Analytics, label: 'Rekap Nilai', href: '/recaps', badge: null },
-            { icon: FactCheck, label: 'Absensi Harian', href: '/daily-attendances', badge: 'Baru' },
+            { icon: FactCheck, label: 'Absensi Harian', href: '/daily-attendances', badge: null },
             { icon: CalendarMonth, label: 'Absensi & Ekskul', href: '/attendances', badge: null },
         ],
     },
