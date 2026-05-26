@@ -51,7 +51,7 @@ export default function Create({
         }));
 
         setSaving(true);
-        router.post('/attendances', {
+        router.post('/extracurriculars', {
             rombel_id: filters.rombel_id,
             semester: filters.semester,
             records: payload,
@@ -67,7 +67,7 @@ export default function Create({
     });
 
     const applyFilters = () => {
-        router.get('/attendances/create', filterForm.data, { preserveState: false });
+        router.get('/extracurriculars/create', filterForm.data, { preserveState: false });
     };
 
     const wajibCategories = categories.filter((c) => c.jenis === 'wajib');
@@ -88,7 +88,7 @@ export default function Create({
                         <p className="text-xs text-slate-400 mt-0.5">Pilih rombel dan semester untuk mengisi data</p>
                     </div>
                     <Link
-                        href="/attendances"
+                        href="/extracurriculars"
                         className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold py-2 px-4 rounded-xl transition-colors flex items-center gap-2"
                     >
                         <ArrowBack className="w-4 h-4" /> Kembali

@@ -11,7 +11,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ScoreController;
 use App\Http\Controllers\TargetController;
 use App\Http\Controllers\ExtracurricularAttendanceController;
-use App\Http\Controllers\DailyAttendanceController;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\LearningAchievementCriterionController;
 use App\Http\Controllers\RecapController;
 use App\Http\Controllers\ReportController;
@@ -52,12 +52,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/{student}', [ReportController::class, 'show'])->name('reports.show');
 
-    Route::get('/attendances', [ExtracurricularAttendanceController::class, 'index'])->name('attendances.index');
-    Route::get('/attendances/create', [ExtracurricularAttendanceController::class, 'create'])->name('attendances.create');
-    Route::post('/attendances', [ExtracurricularAttendanceController::class, 'store'])->name('attendances.store');
+    Route::get('/extracurriculars', [ExtracurricularAttendanceController::class, 'index'])->name('extracurriculars.index');
+    Route::get('/extracurriculars/create', [ExtracurricularAttendanceController::class, 'create'])->name('extracurriculars.create');
+    Route::post('/extracurriculars', [ExtracurricularAttendanceController::class, 'store'])->name('extracurriculars.store');
 
-    Route::get('/daily-attendances', [DailyAttendanceController::class, 'index'])->name('daily-attendances.index');
-    Route::post('/daily-attendances', [DailyAttendanceController::class, 'store'])->name('daily-attendances.store');
+    Route::get('/attendances', [AttendanceController::class, 'index'])->name('attendances.index');
+    Route::post('/attendances', [AttendanceController::class, 'store'])->name('attendances.store');
 
     Route::get('/learning-achievement-criteria', [LearningAchievementCriterionController::class, 'index'])
         ->name('learning-achievement-criteria.index');

@@ -11,16 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('daily_attendances', function (Blueprint $table) {
+        Schema::create('attendances', function (Blueprint $table) {
             $table->id();
             $table->foreignId('student_id')->constrained()->cascadeOnDelete();
-            $table->date('tanggal');
             $table->enum('semester', ['ganjil', 'genap'])->default('ganjil');
-            $table->enum('status', ['Hadir', 'Sakit', 'Izin', 'Alpa'])->default('Hadir');
-            $table->string('keterangan')->nullable();
+            $table->integer('sakit')->default(0);
+            $table->integer('ijin')->default(0);
+            $table->integer('alpa')->default(0);
             $table->timestamps();
 
-            $table->unique(['student_id', 'tanggal']);
+            $table->unique(['student_id', 'semester']);
         });
     }
 
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('daily_attendances');
+        Schema::dropIfExists('attendances');
     }
 };

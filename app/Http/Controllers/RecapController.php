@@ -50,7 +50,7 @@ class RecapController extends Controller
             'extracurricularAttendances' => function($query) use ($semester) {
                 $query->where('semester', $semester)->with('category');
             },
-            'dailyAttendances' => function($query) use ($semester) {
+            'attendances' => function($query) use ($semester) {
                 $query->where('semester', $semester);
             }
         ])->where('rombel_id', $rombelId)->orderBy('nama_lengkap')->get();
@@ -82,9 +82,10 @@ class RecapController extends Controller
             }
 
             $kehadiran = $student->extracurricularAttendances->first();
-            $sakit = $student->dailyAttendances->where('status', 'Sakit')->count();
-            $ijin = $student->dailyAttendances->where('status', 'Izin')->count();
-            $alpa = $student->dailyAttendances->where('status', 'Alpa')->count();
+            $absen = $student->attendances->first();
+            $sakit = $absen?->sakit ?? 0;
+            $ijin = $absen?->ijin ?? 0;
+            $alpa = $absen?->alpa ?? 0;
 
             $studentsData[] = [
                 'id' => $student->id,

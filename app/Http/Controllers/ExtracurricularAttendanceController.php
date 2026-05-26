@@ -46,7 +46,7 @@ class ExtracurricularAttendanceController extends Controller
         ];
 
         if (! $rombelId || ! $semester) {
-            return Inertia::render('Attendances/Index', $payload);
+            return Inertia::render('Extracurriculars/Index', $payload);
         }
 
         $students = Student::where('rombel_id', $rombelId)
@@ -76,7 +76,7 @@ class ExtracurricularAttendanceController extends Controller
         $payload['records'] = $records;
         $payload['canEdit'] = $students->isNotEmpty();
 
-        return Inertia::render('Attendances/Index', $payload);
+        return Inertia::render('Extracurriculars/Index', $payload);
     }
 
     public function create(Request $request): Response
@@ -123,7 +123,7 @@ class ExtracurricularAttendanceController extends Controller
             'records' => $records,
             'canEdit' => true,
         ];
-        return Inertia::render('Attendances/Create', $payload);
+        return Inertia::render('Extracurriculars/Create', $payload);
     }
 
 
@@ -179,7 +179,7 @@ class ExtracurricularAttendanceController extends Controller
         });
 
         return redirect()
-            ->route('attendances.index', [
+            ->route('extracurriculars.index', [
                 'rombel_id' => $validated['rombel_id'],
                 'semester' => $semester,
             ])

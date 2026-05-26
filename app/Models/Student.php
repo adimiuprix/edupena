@@ -28,8 +28,8 @@ class Student extends Model
         return $this->hasMany(LearningAchievementCriterion::class);
     }
 
-    public function dailyAttendances()
+    public function attendances()
     {
-        return $this->hasMany(DailyAttendance::class);
+        return $this->hasMany(Attendance::class);
     }
 }
