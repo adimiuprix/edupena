@@ -79,6 +79,33 @@ class ExtracurricularAttendanceController extends Controller
         return Inertia::render('Attendances/Index', $payload);
     }
 
+    public function create(Request $request): Response
+    {
+        $rombels = Rombel::orderBy('tingkat')->orderBy('nama_rombel')->get(['id', 'tingkat', 'nama_rombel']);
+        $categories = ExtracurricularCategory::orderBy('jenis')->orderBy('nama_ekskul')->get();
+        $defaultSemester = $this->normalizeSemester(Setting::where('key', 'semester_aktif')->value('value'));
+        $semester = $this->normalizeSemester($request->get('semester')) ?: $defaultSemester;
+        $rombelId = $request->integer('rombel_id') ?: null;
+        $payload = [
+            'rombels' => $rombels,
+            'categories' => $categories,
+            'predikatOptions' => self::PREDIKAT_OPTIONS,
+            'semesters' => [
+                ['value' => 'ganjil', 'label' => 'Ganjil'],
+                ['value' => 'genap', 'label' => 'Genap'],
+            ],
+            'filters' => [
+                'rombel_id' => $rombelId,
+                'semester' => $semester,
+            ],
+            'students' => [],
+            'records' => [],
+            'canEdit' => true,
+        ];
+        return Inertia::render('Attendances/Create', $payload);
+    }
+
+
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([

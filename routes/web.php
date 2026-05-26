@@ -52,6 +52,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports/{student}', [ReportController::class, 'show'])->name('reports.show');
 
     Route::get('/attendances', [ExtracurricularAttendanceController::class, 'index'])->name('attendances.index');
+    Route::get('/attendances/create', [ExtracurricularAttendanceController::class, 'create'])->name('attendances.create');
     Route::post('/attendances', [ExtracurricularAttendanceController::class, 'store'])->name('attendances.store');
 
     Route::get('/learning-achievement-criteria', [LearningAchievementCriterionController::class, 'index'])

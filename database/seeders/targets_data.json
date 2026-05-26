@@ -4597,5 +4597,54 @@
     "semester": "genap",
     "nomor_tp": 4,
     "deskripsi": "membuat cangkriman; membuat kerangka/ cengkorongan pidato serta menulis teks pidato ."
-  }
+   },
+   {
+       "mapel_name": "Pendidikan Agama",
+       "kelas": "1",
+       "semester": "ganjil",
+       "nomor_tp": 1,
+       "deskripsi": "Belum dikonfigurasi TP."
+   },
+   {
+       "mapel_name": "Ilmu Pengetahuan Alam dan Sosial",
+       "kelas": "1",
+       "semester": "ganjil",
+       "nomor_tp": 1,
+       "deskripsi": "Belum dikonfigurasi TP."
+   },
+   {
+       "mapel_name": "PJOK",
+       "kelas": "1",
+       "semester": "ganjil",
+       "nomor_tp": 1,
+       "deskripsi": "Belum dikonfigurasi TP."
+   },
+   {
+       "mapel_name": "Koding dan Kecerdasan Arifisial",
+       "kelas": "1",
+       "semester": "ganjil",
+       "nomor_tp": 1,
+       "deskripsi": "Belum dikonfigurasi TP."
+   },
+   {
+       "mapel_name": "Bahasa Daerah",
+       "kelas": "1",
+       "semester": "ganjil",
+       "nomor_tp": 1,
+       "deskripsi": "Belum dikonfigurasi TP."
+   },
+   {
+       "mapel_name": "Bela Diri",
+       "kelas": "1",
+       "semester": "ganjil",
+       "nomor_tp": 1,
+       "deskripsi": "Belum dikonfigurasi TP."
+   },
+   {
+       "mapel_name": "Pramuka",
+       "kelas": "1",
+       "semester": "ganjil",
+       "nomor_tp": 1,
+       "deskripsi": "Belum dikonfigurasi TP."
+   }
 ]

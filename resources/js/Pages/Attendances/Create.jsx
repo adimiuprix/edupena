@@ -1,10 +1,10 @@
 import AppLayout from '@/Layouts/AppLayout';
-import InputLabel from '@/Components/InputLabel';
-import { router, useForm, usePage } from '@inertiajs/react';
+
+import { router, usePage, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { Save } from '@mui/icons-material';
 
-export default function Index({
+export default function Create({
     rombels,
     categories,
     predikatOptions,
@@ -12,7 +12,7 @@ export default function Index({
     filters,
     students = [],
     records = {},
-    canEdit = false,
+    canEdit = true,
 }) {
     const { flash, global_settings } = usePage().props;
 
@@ -38,14 +38,6 @@ export default function Index({
         setGrid(buildGrid(records));
     }, [records, students]);
 
-    const filterForm = useForm({
-        rombel_id: filters.rombel_id || '',
-        semester: filters.semester || '',
-    });
-
-    const applyFilters = () => {
-        router.get('/attendances', filterForm.data, { preserveState: false });
-    };
 
     const updateRow = (studentId, field, value) => {
         setGrid((prev) => ({
@@ -67,8 +59,8 @@ export default function Index({
 
         setSaving(true);
         router.post('/attendances', {
-            rombel_id: filterForm.data.rombel_id,
-            semester: filterForm.data.semester,
+            rombel_id: filters.rombel_id,
+            semester: filters.semester,
             records: payload,
         }, {
             preserveScroll: true,
@@ -80,56 +72,14 @@ export default function Index({
     const pilihanCategories = categories.filter((c) => c.jenis === 'pilihan');
 
     return (
-        <AppLayout title="Absensi & Ekskul">
+        <AppLayout title="Tambah Absensi & Ekskul">
             {flash?.message && (
                 <div className="mb-4 p-4 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl">
                     {flash.message}
                 </div>
             )}
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-6">
-                <p className="font-bold text-slate-800 mb-1">Filter Data</p>
-                <p className="text-xs text-slate-500 mb-4">
-                    Semester aktif: {global_settings?.semester_aktif || '-'} · Satu ekskul per siswa per semester
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                    <div>
-                        <InputLabel value="Rombongan Belajar" />
-                        <select
-                            value={filterForm.data.rombel_id}
-                            onChange={(e) => filterForm.setData('rombel_id', e.target.value)}
-                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm"
-                        >
-                            <option value="">-- Pilih Rombel --</option>
-                            {rombels.map((r) => (
-                                <option key={r.id} value={r.id}>
-                                    Kelas {r.tingkat} - {r.nama_rombel}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div>
-                        <InputLabel value="Semester" />
-                        <select
-                            value={filterForm.data.semester}
-                            onChange={(e) => filterForm.setData('semester', e.target.value)}
-                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm"
-                        >
-                            <option value="">-- Pilih Semester --</option>
-                            {semesters.map((s) => (
-                                <option key={s.value} value={s.value}>{s.label}</option>
-                            ))}
-                        </select>
-                    </div>
-                        <button
-                            type="button"
-                            onClick={() => router.get('/attendances/create')}
-                            className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-xl ml-2"
-                        >
-                            Tambah Data
-                        </button>
-                </div>
-            </div>
+
 
             {!filters.rombel_id || !filters.semester ? (
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-amber-800 text-sm">
@@ -144,7 +94,8 @@ export default function Index({
                     Tidak ada siswa di rombel ini.
                 </div>
             ) : (
-                <form onSubmit={handleSave}>
+                <>
+<form onSubmit={handleSave}>
                     <div className="mb-4 flex justify-between items-center">
                         <p className="text-sm text-slate-600">
                             Isi <strong>satu ekskul</strong>, predikat, dan jumlah hari absensi per siswa.
@@ -248,6 +199,7 @@ export default function Index({
                         </table>
                     </div>
                 </form>
+</>
             )}
         </AppLayout>
     );

@@ -5,13 +5,6 @@ import re
 wb = openpyxl.load_workbook('eraport.xlsm', data_only=True)
 sheet = wb['EDIT TP']
 
-# Dictionary untuk memetakan kolom (0-indexed) ke Kelas dan Semester
-# KELAS 1: C (2) dan G (6)
-# KELAS 2: L (11) dan P (15)
-# KELAS 3: U (20) dan Y (24)
-# KELAS 4: AD (29) dan AH (33)
-# KELAS 5: AM (38) dan AQ (42)
-# KELAS 6: AV (47) dan AZ (51)
 col_mapping = {
     2: {'kelas': '1', 'semester': 'ganjil'},
     6: {'kelas': '1', 'semester': 'genap'},
