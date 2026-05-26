@@ -21,7 +21,9 @@ class DatabaseSeeder extends Seeder
             CategoryMapelSeeder::class,
             MapelSeeder::class,
             ExtracurricularCategorySeeder::class,
+            RombelSeeder::class,
             TargetSeeder::class,
+            UserTeacherSeeder::class,
         ]);
 
         $adminRole = Role::where('slug', 'admin')->first();
