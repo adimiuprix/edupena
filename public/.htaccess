@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # Jika app di subfolder (mis. domain.com/tosun/public), uncomment dan sesuaikan:
+    # RewriteBase /tosun/public/
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -23,3 +26,9 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# Paksa HTTPS di production (uncomment jika sudah pakai SSL)
+# <IfModule mod_rewrite.c>
+#     RewriteCond %{HTTPS} off
+#     RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# </IfModule>
