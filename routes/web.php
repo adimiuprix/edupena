@@ -14,6 +14,7 @@ use App\Http\Controllers\ExtracurricularAttendanceController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\LearningAchievementCriterionController;
 use App\Http\Controllers\RecapController;
+use App\Http\Controllers\ExamController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
@@ -49,6 +50,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('targets', TargetController::class)->except(['show']);
 
     Route::get('/recaps', [RecapController::class, 'index'])->name('recaps.index');
+    Route::get('/exams', [ExamController::class, 'index'])->name('exams.index');
+    Route::post('/exams', [ExamController::class, 'store'])->name('exams.store');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/{student}', [ReportController::class, 'show'])->name('reports.show');
 
