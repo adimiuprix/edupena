@@ -42,10 +42,9 @@ Fokus utama adalah memindahkan proses pengolahan nilai dari Excel ke dalam bentu
 
 Fokus pada penambahan elemen pelengkap non-akademik dan statistik dasbor.
 
-- `[~]` **Tahap 6. Modul Ekstrakurikuler & Absensi** *(gabung satu halaman, satu ekskul per siswa)*
+- `[x]` **Tahap 6. Modul Ekstrakurikuler & Absensi** *(absensi rekap per semester, satu ekskul per siswa)*
   - `[x]` Input absensi per semester (`sakit`, `ijin`, `alpa`) — `/attendances`
   - `[x]` Input ekskul + predikat (satu ekskul per siswa, master `extracurricular_categories`)
-  - `[ ]` Form absensi harian/bulanan terpisah (saat ini rekap jumlah hari per semester)
 
 - `[x]` **Tahap 7. Dashboard Analytics**
   - `[x]` Statistik dasar di dashboard (jumlah siswa, guru, mapel, L/P, siswa terbaru)
