@@ -49,7 +49,7 @@ class ReportController extends Controller
 
     public function show(Request $request, Student $student): Response
     {
-        $rombel = $student->rombel()->with('waliKelas')->first();
+        $rombel = $student->rombel()->with('waliKelas.teacher')->first();
         if (!$rombel) {
             abort(404, 'Student does not belong to any rombel.');
         }
@@ -84,8 +84,8 @@ class ReportController extends Controller
 
             // Generate Deskripsi
             $threshold = $thresholds->get($mapel->id);
-            $min = $threshold ? (float)$threshold->min : 60; // default jika belum diset
-            $max = $threshold ? (float)$threshold->max : 70; // default
+            $min = $threshold ? (float)$threshold->min : 60;
+            $max = $threshold ? (float)$threshold->max : 70;
 
             $deskripsiSangatBaik = [];
             $deskripsiBaik = [];
@@ -116,9 +116,11 @@ class ReportController extends Controller
             }
 
             $reportData[] = [
-                'mapel' => $mapel->mata_pelajaran,
-                'nilai_akhir' => $nilaiAkhir,
-                'capaian_kompetensi' => implode(". ", $capaian) . ".",
+                'mapel'              => $mapel->mata_pelajaran,
+                'nilai_akhir'        => $nilaiAkhir,
+                'capaian_kompetensi' => count($capaian) > 0
+                    ? implode(". ", $capaian) . "."
+                    : '-',
             ];
         }
 
@@ -128,25 +130,37 @@ class ReportController extends Controller
             ->first();
             
         $absen = $student->attendances()->where('semester', $semester)->first();
-        $sakit = $absen?->sakit ?? 0;
-        $ijin = $absen?->ijin ?? 0;
-        $alpa = $absen?->alpa ?? 0;
 
         // Data Sekolah
         $settings = Setting::pluck('value', 'key')->toArray();
 
+        // Wali kelas NIP — ambil dari relasi teacher
+        $waliKelasNip = $rombel->waliKelas?->teacher?->nip ?? null;
+
         return Inertia::render('Reports/Show', [
-            'student' => $student,
-            'rombel' => $rombel,
-            'semester' => $semester,
-            'reportData' => $reportData,
-            'kehadiran' => $kehadiran,
-            'absensi' => [
-                'sakit' => $sakit,
-                'ijin' => $ijin,
-                'alpa' => $alpa,
+            'student' => [
+                'id'             => $student->id,
+                'nama_lengkap'   => $student->nama_lengkap,
+                'nama_panggilan' => $student->nama_panggilan,
+                'nisn'           => $student->nisn,
+                'nipd'           => $student->nipd,
+                'agama'          => $student->agama,
+                'jenis_kelamin'  => $student->jenis_kelamin,
+                'tempat_lahir'   => $student->tempat_lahir,
+                'tanggal_lahir'  => $student->tanggal_lahir,
+                'nama_wali'      => $student->nama_wali_murid ?? $student->nama_wali ?? null,
             ],
-            'settings' => $settings,
+            'rombel'      => $rombel,
+            'semester'    => $semester,
+            'reportData'  => $reportData,
+            'kehadiran'   => $kehadiran,
+            'absensi'     => [
+                'sakit' => $absen?->sakit ?? 0,
+                'ijin'  => $absen?->ijin ?? 0,
+                'alpa'  => $absen?->alpa ?? 0,
+            ],
+            'settings'    => $settings,
+            'waliKelasNip' => $waliKelasNip,
         ]);
     }
 }
