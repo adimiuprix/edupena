@@ -14,25 +14,6 @@ function getFase(tingkat) {
     return 'C';
 }
 
-function buildAlamatSekolah(settings) {
-    const parts = [
-        settings.alamat_sekolah,
-        settings.desa_kelurahan,
-        settings.kecamatan,
-        settings.kabupaten_kota,
-        settings.provinsi,
-        settings.kode_pos,
-    ].filter(Boolean);
-    return parts.join(', ');
-}
-
-function buildKontakSekolah(settings) {
-    const parts = [];
-    if (settings.email_sekolah) parts.push(`Email: ${settings.email_sekolah}`);
-    if (settings.website_sekolah) parts.push(`Web: ${settings.website_sekolah}`);
-    return parts.join('  |  ');
-}
-
 function getTanggalCetak(settings) {
     const kota = settings.kabupaten_kota || 'Kota';
     const tanggal = new Date().toLocaleDateString('id-ID', {
@@ -43,13 +24,66 @@ function getTanggalCetak(settings) {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export default function Show({ student, rombel, semester, reportData, kehadiran, absensi, settings, waliKelasNip }) {
+export default function Show({ student, rombel, semester, reportData, kehadiran, absensi, settings, waliKelasNip, kkmData }) {
 
     const printPage = () => window.print();
 
-    const fase       = getFase(rombel.tingkat);
+    const fase = getFase(rombel.tingkat);
     const semesterLabel = semester?.toLowerCase() === 'ganjil' ? '1 (Ganjil)' : '2 (Genap)';
     const waliKelasNama = rombel?.wali_kelas?.name ?? rombel?.waliKelas?.name ?? null;
+    const isGenap = semester?.toLowerCase() === 'genap';
+
+    // ─── Hitung Status Kenaikan Kelas (Semester Genap) ───────────────────────
+    const hitungKenaikanKelas = () => {
+        if (!isGenap || reportData.length === 0) {
+            return null;
+        }
+
+        const totalMapel = reportData.length;
+        let mapelTuntas = 0;
+        let mapelTidakTuntas = 0;
+
+        reportData.forEach((data, index) => {
+            const nilaiAkhir = data.nilai_akhir;
+            // Ambil KKM dari kkmData jika ada, default 75
+            const kkm = kkmData?.[index]?.nilai_kkm;
+
+            if (nilaiAkhir !== null && nilaiAkhir !== undefined && nilaiAkhir >= kkm) {
+                mapelTuntas++;
+            } else if (nilaiAkhir !== null && nilaiAkhir !== undefined) {
+                mapelTidakTuntas++;
+            }
+        });
+
+        const persenTuntas = totalMapel > 0 ? (mapelTuntas / totalMapel) * 100 : 0;
+        
+        // Hitung total ketidakhadiran
+        const totalAbsen = (absensi?.sakit || 0) + (absensi?.ijin || 0) + (absensi?.alpa || 0);
+        // Asumsi total hari efektif 200 hari per tahun, atau bisa disesuaikan
+        const totalHariEfektif = 200;
+        const persenKehadiran = totalHariEfektif > 0 ? ((totalHariEfektif - totalAbsen) / totalHariEfektif) * 100 : 100;
+
+        // Kriteria Kenaikan Kelas Kurikulum Merdeka:
+        // 1. Tuntas minimal 80% dari total mapel ATAU maksimal 3 mapel tidak tuntas
+        // 2. Kehadiran minimal 90%
+        const syaratKetuntasan = persenTuntas >= 80 || mapelTidakTuntas <= 3;
+        const syaratKehadiran = persenKehadiran >= 90;
+
+        const naikKelas = syaratKetuntasan && syaratKehadiran;
+
+        return {
+            naikKelas,
+            totalMapel,
+            mapelTuntas,
+            mapelTidakTuntas,
+            persenTuntas: persenTuntas.toFixed(1),
+            persenKehadiran: persenKehadiran.toFixed(1),
+            syaratKetuntasan,
+            syaratKehadiran,
+        };
+    };
+
+    const statusKenaikan = hitungKenaikanKelas();
 
     return (
         <>
@@ -69,7 +103,7 @@ export default function Show({ student, rombel, semester, reportData, kehadiran,
                         className="inline-flex items-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow transition-colors"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
+                            <polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" />
                         </svg>
                         Cetak / Simpan PDF
                     </button>
@@ -78,44 +112,6 @@ export default function Show({ student, rombel, semester, reportData, kehadiran,
 
             {/* ── Halaman Rapor A4 ── */}
             <div className="rapor-page print:mt-0 mt-20 mb-10 mx-auto print:mx-0 print:shadow-none bg-white shadow-2xl">
-
-                {/* ════════════════════════════════════════
-                    KOP SEKOLAH
-                ════════════════════════════════════════ */}
-                <div className="kop-wrapper">
-                    {/* Logo (kondisional) */}
-                    <img
-                        src="/images/logo_sekolah.png"
-                        alt="Logo Sekolah"
-                        className="kop-logo"
-                        onError={(e) => { e.target.style.display = 'none'; }}
-                    />
-
-                    {/* Teks Kop */}
-                    <div className="kop-text">
-                        <div className="kop-instansi">PEMERINTAH KABUPATEN {(settings.kabupaten_kota || '').toUpperCase()}</div>
-                        <div className="kop-nama-sekolah">{(settings.nama_sekolah || 'NAMA SEKOLAH').toUpperCase()}</div>
-                        <div className="kop-alamat">{buildAlamatSekolah(settings)}</div>
-                        {buildKontakSekolah(settings) && (
-                            <div className="kop-kontak">{buildKontakSekolah(settings)}</div>
-                        )}
-                        {settings.npsn && (
-                            <div className="kop-npsn">NPSN: {settings.npsn}</div>
-                        )}
-                    </div>
-
-                    {/* Logo kanan (opsional duplikat / Garuda / Kab) */}
-                    <img
-                        src="/images/logo_kabupaten.png"
-                        alt="Logo Kabupaten"
-                        className="kop-logo"
-                        onError={(e) => { e.target.style.display = 'none'; }}
-                    />
-                </div>
-
-                {/* Garis Kop: Double Line */}
-                <div className="kop-garis-luar"></div>
-                <div className="kop-garis-dalam"></div>
 
                 {/* ════════════════════════════════════════
                     JUDUL
@@ -270,7 +266,7 @@ export default function Show({ student, rombel, semester, reportData, kehadiran,
                     <div className="section-title">D. Catatan Wali Kelas</div>
                     <div className="catatan-box">
                         <div className="catatan-lines">
-                            {[...Array(3)].map((_, i) => (
+                            {[...Array(2)].map((_, i) => (
                                 <div key={i} className="catatan-line"></div>
                             ))}
                         </div>
@@ -278,6 +274,82 @@ export default function Show({ student, rombel, semester, reportData, kehadiran,
                 </div>
 
                 <div className="section-divider"></div>
+
+                {/* ════════════════════════════════════════
+                    KETERANGAN KENAIKAN KELAS (SEMESTER GENAP)
+                ════════════════════════════════════════ */}
+                {statusKenaikan && (
+                    <>
+                        <div className="kenaikan-wrapper">
+                            <div className="kenaikan-box">
+                                <p className="kenaikan-intro">
+                                    Berdasarkan pencapaian tujuan pembelajaran pada semester ganjil dan genap, 
+                                    dengan mempertimbangkan ketuntasan {statusKenaikan.mapelTuntas} dari {statusKenaikan.totalMapel} mata pelajaran 
+                                    ({statusKenaikan.persenTuntas}% ketuntasan) dan kehadiran {statusKenaikan.persenKehadiran}%, 
+                                    maka peserta didik ditetapkan:
+                                </p>
+                                
+                                <table className="tabel-keputusan">
+                                    <tbody>
+                                        {statusKenaikan.naikKelas ? (
+                                            <>
+                                                <tr>
+                                                    <td className="keputusan-label">Naik kelas</td>
+                                                    <td className="keputusan-sep">:</td>
+                                                    <td className="keputusan-value">
+                                                        <strong>{rombel.tingkat < 6 ? rombel.tingkat + 1 : 'Lulus'}</strong> 
+                                                        {rombel.tingkat < 6 && (
+                                                            <span className="kelas-terbilang">
+                                                                ({['', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam'][rombel.tingkat + 1]})
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="keputusan-label">Tinggal kelas</td>
+                                                    <td className="keputusan-sep">:</td>
+                                                    <td className="keputusan-value">-</td>
+                                                </tr>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <tr>
+                                                    <td className="keputusan-label">Naik kelas</td>
+                                                    <td className="keputusan-sep">:</td>
+                                                    <td className="keputusan-value">-</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="keputusan-label">Tinggal kelas</td>
+                                                    <td className="keputusan-sep">:</td>
+                                                    <td className="keputusan-value">
+                                                        <strong>{rombel.tingkat}</strong>
+                                                        <span className="kelas-terbilang">
+                                                            ({['', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam'][rombel.tingkat]})
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </>
+                                        )}
+                                    </tbody>
+                                </table>
+                                
+                                {!statusKenaikan.naikKelas && (
+                                    <div className="catatan-kenaikan">
+                                        <p className="catatan-penjelasan">
+                                            <em>Catatan: Peserta didik belum memenuhi kriteria kenaikan kelas karena 
+                                            {!statusKenaikan.syaratKetuntasan && ` memiliki ${statusKenaikan.mapelTidakTuntas} mata pelajaran yang tidak tuntas (ketuntasan ${statusKenaikan.persenTuntas}%)`}
+                                            {!statusKenaikan.syaratKetuntasan && !statusKenaikan.syaratKehadiran && ' dan'}
+                                            {!statusKenaikan.syaratKehadiran && ` kehadiran ${statusKenaikan.persenKehadiran}% (kurang dari 90%)`}.
+                                            Peserta didik diharapkan mengikuti program remedial dan meningkatkan kehadiran.</em>
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="section-divider"></div>
+                    </>
+                )}
 
                 {/* ════════════════════════════════════════
                     TANDA TANGAN
@@ -514,6 +586,56 @@ export default function Show({ student, rombel, semester, reportData, kehadiran,
                     border-bottom: 1px solid #aaa;
                     margin-bottom: 11px;
                     height: 11px;
+                }
+
+                /* ─ Kenaikan Kelas (Format Naratif) ─ */
+                .kenaikan-wrapper { 
+                    margin-bottom: 2px; 
+                }
+                .kenaikan-box { 
+                    padding: 4px 0; 
+                }
+                .kenaikan-intro {
+                    font-size: 9.5pt;
+                    text-align: justify;
+                    line-height: 1.5;
+                    margin-bottom: 8px;
+                }
+                
+                .tabel-keputusan {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 9.5pt;
+                    margin-bottom: 4px;
+                }
+                .tabel-keputusan td { 
+                    padding: 3px 4px; 
+                }
+                .keputusan-label { 
+                    font-weight: 600; 
+                    width: 100px; 
+                }
+                .keputusan-sep { 
+                    width: 10px; 
+                    text-align: center; 
+                }
+                .keputusan-value { 
+                    font-weight: 500; 
+                }
+                .kelas-terbilang {
+                    margin-left: 6px;
+                    font-weight: 400;
+                    font-style: italic;
+                }
+                
+                .catatan-kenaikan {
+                    margin-top: 8px;
+                }
+                .catatan-penjelasan {
+                    font-size: 8.5pt;
+                    text-align: justify;
+                    line-height: 1.4;
+                    margin: 0;
                 }
 
                 /* ─ Tanda Tangan ─ */

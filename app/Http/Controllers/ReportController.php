@@ -8,6 +8,7 @@ use App\Models\Setting;
 use App\Models\Student;
 use App\Models\StudentScore;
 use App\Models\LearningAchievementThreshold;
+use App\Models\Kkm;
 use App\Services\ScoreCalculator;
 use App\Services\LearningAchievementCriterionService;
 use Illuminate\Http\Request;
@@ -70,7 +71,14 @@ class ReportController extends Controller
             ->get()
             ->keyBy('mapel_id');
 
+        // Ambil data KKM untuk kenaikan kelas
+        $kkmList = Kkm::where('rombel_id', $rombel->id)
+            ->where('semester', $semester)
+            ->get()
+            ->keyBy('mapel_id');
+
         $reportData = [];
+        $kkmData = [];
 
         foreach ($mapels as $mapel) {
             $mapelScores = $scores->where('mapel_id', $mapel->id);
@@ -122,6 +130,13 @@ class ReportController extends Controller
                     ? implode(". ", $capaian) . "."
                     : '-',
             ];
+
+            // Simpan KKM untuk perhitungan kenaikan kelas
+            $kkm = $kkmList->get($mapel->id);
+            $kkmData[] = [
+                'mapel_id' => $mapel->id,
+                'nilai_kkm' => $kkm?->nilai_kkm ?? 75, // default 75 jika tidak ada
+            ];
         }
 
         $kehadiran = $student->extracurricularAttendances()
@@ -161,6 +176,7 @@ class ReportController extends Controller
             ],
             'settings'    => $settings,
             'waliKelasNip' => $waliKelasNip,
+            'kkmData'     => $kkmData,
         ]);
     }
 }

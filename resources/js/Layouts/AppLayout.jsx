@@ -18,7 +18,8 @@ import {
     Notifications,
     ArrowDropDown,
     AccountCircle,
-    FactCheck
+    FactCheck,
+    Grade
 } from '@mui/icons-material';
 
 const navGroups = [
@@ -30,6 +31,7 @@ const navGroups = [
             { icon: Book, label: 'Mata Pelajaran', href: '/mapels', badge: null },
             { icon: School, label: 'Data Guru', href: '/teachers', badge: null },
             { icon: MeetingRoom, label: 'Kelola Rombel', href: '/rombels', badge: null },
+            { icon: Grade, label: 'Manajemen KKM', href: '/kkm', badge: null },
             { icon: Edit, label: 'Entry Nilai', href: '/scores', badge: null },
             { icon: Flag, label: 'Tujuan Pembelajaran', href: '/targets', badge: null },
             { icon: AssignmentTurnedIn, label: 'Kriteria Ketercapaian', href: '/learning-achievement-criteria', badge: null },

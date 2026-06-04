@@ -28,4 +28,9 @@ class Rombel extends Model
     {
         return $this->hasMany(LearningAchievementThreshold::class);
     }
+
+    public function kkm()
+    {
+        return $this->hasMany(Kkm::class, 'rombel_id');
+    }
 }

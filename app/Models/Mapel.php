@@ -27,4 +27,9 @@ class Mapel extends Model
     {
         return $this->hasMany(LearningAchievementCriterion::class, 'mapel_id');
     }
+
+    public function kkm(): HasMany
+    {
+        return $this->hasMany(Kkm::class, 'mapel_id');
+    }
 }

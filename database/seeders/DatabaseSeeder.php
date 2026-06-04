@@ -25,7 +25,8 @@ class DatabaseSeeder extends Seeder
             RombelSeeder::class,
             TargetSeeder::class,
             UserTeacherSeeder::class,
-            StudentSeeder::class
+            StudentSeeder::class,
+            KkmSeeder::class,
         ]);
 
         $adminRole = Role::where('slug', 'admin')->first();

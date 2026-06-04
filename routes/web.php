@@ -16,6 +16,7 @@ use App\Http\Controllers\LearningAchievementCriterionController;
 use App\Http\Controllers\RecapController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\KkmController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
@@ -66,5 +67,8 @@ Route::middleware('auth')->group(function () {
         ->name('learning-achievement-criteria.index');
     Route::post('/learning-achievement-criteria', [LearningAchievementCriterionController::class, 'store'])
         ->name('learning-achievement-criteria.store');
+
+    Route::get('/kkm', [KkmController::class, 'index'])->name('kkm.index');
+    Route::post('/kkm', [KkmController::class, 'store'])->name('kkm.store');
 });
 
