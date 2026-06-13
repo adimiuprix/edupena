@@ -18,8 +18,8 @@ class AttendanceController extends Controller
     {
         $rombels = Rombel::orderBy('tingkat')->orderBy('nama_rombel')->get(['id', 'tingkat', 'nama_rombel']);
         
-        $defaultSemester = Setting::where('key', 'semester_aktif')->value('value') ?? 'ganjil';
-        $semester = $request->get('semester') ?: $defaultSemester;
+        $defaultSemester = $this->normalizeSemester(Setting::where('key', 'semester_aktif')->value('value')) ?? 'ganjil';
+        $semester = $this->normalizeSemester($request->get('semester')) ?: $defaultSemester;
         $rombelId = $request->integer('rombel_id') ?: null;
 
         $students = $rombelId
@@ -109,5 +109,20 @@ class AttendanceController extends Controller
                 'semester' => $semester,
             ])
             ->with('message', 'Data absensi berhasil disimpan.');
+    }
+
+    private function normalizeSemester(?string $value): ?string
+    {
+        if (!$value) {
+            return null;
+        }
+
+        $lower = strtolower(trim($value));
+
+        return match (true) {
+            str_contains($lower, 'genap') => 'genap',
+            str_contains($lower, 'ganjil') => 'ganjil',
+            default => in_array($lower, ['ganjil', 'genap'], true) ? $lower : null,
+        };
     }
 }

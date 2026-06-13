@@ -20,10 +20,10 @@ class ReportController extends Controller
     public function index(Request $request): Response
     {
         $rombels = Rombel::orderBy('tingkat')->orderBy('nama_rombel')->get(['id', 'tingkat', 'nama_rombel', 'tahun_ajaran']);
-        $defaultSemester = Setting::where('key', 'semester_aktif')->value('value') ?? 'ganjil';
+        $defaultSemester = $this->normalizeSemester(Setting::where('key', 'semester_aktif')->value('value')) ?? 'ganjil';
         
         $rombelId = $request->integer('rombel_id') ?: ($rombels->first()?->id);
-        $semester = $request->get('semester') ?: $defaultSemester;
+        $semester = $this->normalizeSemester($request->get('semester')) ?: $defaultSemester;
 
         $payload = [
             'rombels' => $rombels,
@@ -55,7 +55,7 @@ class ReportController extends Controller
             abort(404, 'Student does not belong to any rombel.');
         }
         
-        $semester = $request->get('semester') ?: Setting::where('key', 'semester_aktif')->value('value');
+        $semester = $this->normalizeSemester($request->get('semester')) ?: $this->normalizeSemester(Setting::where('key', 'semester_aktif')->value('value'));
         
         $mapels = Mapel::orderBy('mata_pelajaran')->get();
         
@@ -123,19 +123,22 @@ class ReportController extends Controller
                 $capaian[] = "Perlu bimbingan dalam " . implode(", ", $deskripsiPerluBimbingan);
             }
 
+            // Simpan KKM untuk perhitungan kenaikan kelas
+            $kkm = $kkmList->get($mapel->id);
+            $nilaiKkm = $kkm?->nilai_kkm ?? 75; // default 75 jika tidak ada
+
             $reportData[] = [
                 'mapel'              => $mapel->mata_pelajaran,
                 'nilai_akhir'        => $nilaiAkhir,
+                'nilai_kkm'          => $nilaiKkm,
                 'capaian_kompetensi' => count($capaian) > 0
                     ? implode(". ", $capaian) . "."
                     : '-',
             ];
 
-            // Simpan KKM untuk perhitungan kenaikan kelas
-            $kkm = $kkmList->get($mapel->id);
             $kkmData[] = [
                 'mapel_id' => $mapel->id,
-                'nilai_kkm' => $kkm?->nilai_kkm ?? 75, // default 75 jika tidak ada
+                'nilai_kkm' => $nilaiKkm,
             ];
         }
 
@@ -178,5 +181,20 @@ class ReportController extends Controller
             'waliKelasNip' => $waliKelasNip,
             'kkmData'     => $kkmData,
         ]);
+    }
+
+    private function normalizeSemester(?string $value): ?string
+    {
+        if (!$value) {
+            return null;
+        }
+
+        $lower = strtolower(trim($value));
+
+        return match (true) {
+            str_contains($lower, 'genap') => 'genap',
+            str_contains($lower, 'ganjil') => 'ganjil',
+            default => in_array($lower, ['ganjil', 'genap'], true) ? $lower : null,
+        };
     }
 }

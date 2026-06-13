@@ -43,10 +43,10 @@ export default function Show({ student, rombel, semester, reportData, kehadiran,
         let mapelTuntas = 0;
         let mapelTidakTuntas = 0;
 
-        reportData.forEach((data, index) => {
+        reportData.forEach((data) => {
             const nilaiAkhir = data.nilai_akhir;
-            // Ambil KKM dari kkmData jika ada, default 75
-            const kkm = kkmData?.[index]?.nilai_kkm;
+            // Ambil KKM langsung dari data mapel, default 75
+            const kkm = data.nilai_kkm ?? 75;
 
             if (nilaiAkhir !== null && nilaiAkhir !== undefined && nilaiAkhir >= kkm) {
                 mapelTuntas++;

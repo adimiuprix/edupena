@@ -23,6 +23,7 @@ class MapelSeeder extends Seeder
             ['category_mapels_id' => 2, 'mata_pelajaran' => 'Bahasa Inggris'],
             ['category_mapels_id' => 2, 'mata_pelajaran' => 'Bahasa Daerah'],
             ['category_mapels_id' => 3, 'mata_pelajaran' => 'Ngaji'],
+            ['category_mapels_id' => 3, 'mata_pelajaran' => 'Seni Tari'],
             ['category_mapels_id' => 3, 'mata_pelajaran' => 'Pramuka'],
         ];
 

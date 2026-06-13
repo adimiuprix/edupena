@@ -18,10 +18,10 @@ class KkmController extends Controller
         $rombels = Rombel::orderBy('tingkat')->orderBy('nama_rombel')->get(['id', 'tingkat', 'nama_rombel', 'tahun_ajaran']);
         $mapels = Mapel::orderBy('mata_pelajaran')->get(['id', 'mata_pelajaran']);
 
-        $defaultSemester = Setting::where('key', 'semester_aktif')->value('value') ?? 'ganjil';
+        $defaultSemester = $this->normalizeSemester(Setting::where('key', 'semester_aktif')->value('value')) ?? 'ganjil';
 
         $rombelId = $request->integer('rombel_id') ?: ($rombels->first()?->id);
-        $semester = $request->get('semester') ?: $defaultSemester;
+        $semester = $this->normalizeSemester($request->get('semester')) ?: $defaultSemester;
 
         $payload = [
             'rombels' => $rombels,
@@ -102,5 +102,20 @@ class KkmController extends Controller
                 'semester' => $validated['semester'],
             ])
             ->with('message', 'KKM berhasil disimpan.');
+    }
+
+    private function normalizeSemester(?string $value): ?string
+    {
+        if (!$value) {
+            return null;
+        }
+
+        $lower = strtolower(trim($value));
+
+        return match (true) {
+            str_contains($lower, 'genap') => 'genap',
+            str_contains($lower, 'ganjil') => 'ganjil',
+            default => in_array($lower, ['ganjil', 'genap'], true) ? $lower : null,
+        };
     }
 }

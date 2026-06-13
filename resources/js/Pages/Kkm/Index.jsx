@@ -13,16 +13,20 @@ export default function Index({ rombels, mapels, semesters, filters, kkmData, se
         semester: filters.semester || '',
         kkm_data: kkmData.map(item => ({
             mapel_id: item.mapel_id,
-            nilai_kkm: item.nilai_kkm || '',
+            nilai_kkm: (item.nilai_kkm === null || item.nilai_kkm === undefined) ? '' : item.nilai_kkm,
         })),
     });
 
     useEffect(() => {
-        setData('kkm_data', kkmData.map(item => ({
-            mapel_id: item.mapel_id,
-            nilai_kkm: item.nilai_kkm || '',
-        })));
-    }, [kkmData]);
+        setData({
+            rombel_id: filters.rombel_id || '',
+            semester: filters.semester || '',
+            kkm_data: kkmData.map(item => ({
+                mapel_id: item.mapel_id,
+                nilai_kkm: (item.nilai_kkm === null || item.nilai_kkm === undefined) ? '' : item.nilai_kkm,
+            })),
+        });
+    }, [kkmData, filters.rombel_id, filters.semester]);
 
     const handleFilter = () => {
         router.get('/kkm', {
@@ -40,11 +44,14 @@ export default function Index({ rombels, mapels, semesters, filters, kkmData, se
     };
 
     const handleKkmChange = (mapelId, value) => {
-        const newKkmData = data.kkm_data.map(item => 
-            item.mapel_id === mapelId 
-                ? { ...item, nilai_kkm: value === '' ? '' : parseInt(value) || '' }
-                : item
-        );
+        const newKkmData = data.kkm_data.map(item => {
+            if (item.mapel_id === mapelId) {
+                const parsed = parseInt(value);
+                const newValue = isNaN(parsed) ? '' : parsed;
+                return { ...item, nilai_kkm: newValue };
+            }
+            return item;
+        });
         setData('kkm_data', newKkmData);
     };
 
@@ -141,7 +148,7 @@ export default function Index({ rombels, mapels, semesters, filters, kkmData, se
                                                         type="number"
                                                         min="0"
                                                         max="100"
-                                                        value={data.kkm_data[index]?.nilai_kkm || ''}
+                                                        value={data.kkm_data?.find(d => d.mapel_id === item.mapel_id)?.nilai_kkm ?? ''}
                                                         onChange={(e) => handleKkmChange(item.mapel_id, e.target.value)}
                                                         placeholder="Contoh: 75"
                                                         className="w-full px-4 py-2 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
