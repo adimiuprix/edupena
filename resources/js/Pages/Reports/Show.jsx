@@ -24,7 +24,7 @@ function getTanggalCetak(settings) {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export default function Show({ student, rombel, semester, reportData, kehadiran, absensi, settings, waliKelasNip, kkmData }) {
+export default function Show({ student, rombel, semester, reportData, kehadiran, absensi, settings, waliKelasNip }) {
 
     const printPage = () => window.print();
 
@@ -39,11 +39,15 @@ export default function Show({ student, rombel, semester, reportData, kehadiran,
             return null;
         }
 
-        const totalMapel = reportData.length;
+        // Hanya mapel akademik (bukan ekskul) yang dihitung untuk kenaikan kelas
+        const akademikData = reportData.filter(d => d.tipe !== 'ekskul');
+        const totalMapel = akademikData.length;
+        if (totalMapel === 0) return null;
+
         let mapelTuntas = 0;
         let mapelTidakTuntas = 0;
 
-        reportData.forEach((data) => {
+        akademikData.forEach((data) => {
             const nilaiAkhir = data.nilai_akhir;
             // Ambil KKM langsung dari data mapel, default 75
             const kkm = data.nilai_kkm ?? 75;
@@ -186,8 +190,17 @@ export default function Show({ student, rombel, semester, reportData, kehadiran,
                                 <tr key={index} className={index % 2 === 1 ? 'row-alt' : ''}>
                                     <td className="td-no">{index + 1}</td>
                                     <td className="td-mapel">{data.mapel}</td>
-                                    <td className="td-nilai">{data.nilai_akhir ?? '-'}</td>
-                                    <td className="td-deskripsi">{data.capaian_kompetensi || '-'}</td>
+                                    {data.tipe === 'ekskul' ? (
+                                        <td className="td-nilai td-nilai-huruf">{data.nilai_akhir ?? '-'}</td>
+                                    ) : (
+                                        <td className="td-nilai">{data.nilai_akhir ?? '-'}</td>
+                                    )}
+                                    <td className="td-deskripsi">
+                                        {data.tipe === 'ekskul'
+                                            ? (data.capaian_kompetensi || '-')
+                                            : (data.capaian_kompetensi || '-')
+                                        }
+                                    </td>
                                 </tr>
                             ))
                         ) : (
@@ -534,6 +547,7 @@ export default function Show({ student, rombel, semester, reportData, kehadiran,
                 .th-mapel, .td-mapel { width: 150px; }
                 .td-mapel { font-weight: 600; }
                 .th-nilai, .td-nilai { width: 38px; text-align: center; font-weight: 700; }
+                .td-nilai-huruf { font-style: italic; }
                 .th-deskripsi, .td-deskripsi { text-align: justify; font-size: 8.5pt; line-height: 1.45; }
                 .row-alt { background-color: #f5f5f5; }
                 .row-alt td { background-color: #f5f5f5; print-color-adjust: exact; -webkit-print-color-adjust: exact; }

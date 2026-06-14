@@ -21,7 +21,8 @@ class ExtracurricularAttendanceController extends Controller
     public function index(Request $request): Response
     {
         $rombels = Rombel::orderBy('tingkat')->orderBy('nama_rombel')->get(['id', 'tingkat', 'nama_rombel']);
-        $categories = ExtracurricularCategory::orderBy('jenis')->orderBy('nama_ekskul')->get();
+        $categories = ExtracurricularCategory::with('mapel')
+            ->orderBy('jenis')->orderBy('nama_ekskul')->get();
 
         $defaultSemester = $this->normalizeSemester(Setting::where('key', 'semester_aktif')->value('value'));
 
@@ -82,7 +83,8 @@ class ExtracurricularAttendanceController extends Controller
     public function create(Request $request): Response
     {
         $rombels = Rombel::orderBy('tingkat')->orderBy('nama_rombel')->get(['id', 'tingkat', 'nama_rombel']);
-        $categories = ExtracurricularCategory::orderBy('jenis')->orderBy('nama_ekskul')->get();
+        $categories = ExtracurricularCategory::with('mapel')
+            ->orderBy('jenis')->orderBy('nama_ekskul')->get();
         $defaultSemester = $this->normalizeSemester(Setting::where('key', 'semester_aktif')->value('value'));
         $semester = $this->normalizeSemester($request->get('semester')) ?: $defaultSemester;
         $rombelId = $request->integer('rombel_id') ?: null;

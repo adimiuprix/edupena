@@ -57,8 +57,13 @@ class ReportController extends Controller
         
         $semester = $this->normalizeSemester($request->get('semester')) ?: $this->normalizeSemester(Setting::where('key', 'semester_aktif')->value('value'));
         
-        $mapels = Mapel::orderBy('mata_pelajaran')->get();
-        
+        // Pisahkan mapel akademik (bukan Ekstrakurikuler) dan mapel ekskul
+        $mapelsAkademik = Mapel::whereHas('category', fn($q) => $q->where('kategori', '!=', 'Ekstrakurikuler'))
+            ->orderBy('mata_pelajaran')->get();
+
+        $mapelsEkskul = Mapel::whereHas('category', fn($q) => $q->where('kategori', 'Ekstrakurikuler'))
+            ->orderBy('mata_pelajaran')->get();
+
         $scores = StudentScore::where('student_id', $student->id)
             ->with('target')
             ->whereHas('target', function ($q) use ($semester, $rombel) {
@@ -80,7 +85,8 @@ class ReportController extends Controller
         $reportData = [];
         $kkmData = [];
 
-        foreach ($mapels as $mapel) {
+        // ── Mapel Akademik (Pendidikan Umum + Muatan Lokal) ──────────────────
+        foreach ($mapelsAkademik as $mapel) {
             $mapelScores = $scores->where('mapel_id', $mapel->id);
             if ($mapelScores->isEmpty()) {
                 continue;
@@ -123,14 +129,14 @@ class ReportController extends Controller
                 $capaian[] = "Perlu bimbingan dalam " . implode(", ", $deskripsiPerluBimbingan);
             }
 
-            // Simpan KKM untuk perhitungan kenaikan kelas
             $kkm = $kkmList->get($mapel->id);
-            $nilaiKkm = $kkm?->nilai_kkm ?? 75; // default 75 jika tidak ada
+            $nilaiKkm = $kkm?->nilai_kkm ?? 75;
 
             $reportData[] = [
                 'mapel'              => $mapel->mata_pelajaran,
                 'nilai_akhir'        => $nilaiAkhir,
                 'nilai_kkm'          => $nilaiKkm,
+                'tipe'               => 'akademik',
                 'capaian_kompetensi' => count($capaian) > 0
                     ? implode(". ", $capaian) . "."
                     : '-',
@@ -139,6 +145,38 @@ class ReportController extends Controller
             $kkmData[] = [
                 'mapel_id' => $mapel->id,
                 'nilai_kkm' => $nilaiKkm,
+            ];
+        }
+
+        // ── Mapel Ekstrakurikuler — nilai dari predikat absensi ekskul ────────
+        // Ambil semua record ekskul siswa untuk semester ini
+        $ekskulRecords = $student->extracurricularAttendances()
+            ->with('category')
+            ->where('semester', $semester)
+            ->get();
+
+        // Map: extracurricular_category.mapel_id → record (relasi eksplisit, bukan nama string)
+        $predikatMap = ['Sangat Baik' => 'A', 'Baik' => 'B', 'Cukup' => 'C', 'Kurang' => 'D'];
+
+        foreach ($mapelsEkskul as $mapel) {
+            // Cocokkan via mapel_id — aman, tidak bergantung kesamaan nama
+            $record = $ekskulRecords->first(function ($rec) use ($mapel) {
+                return $rec->category && (int) $rec->category->mapel_id === (int) $mapel->id;
+            });
+
+            if (!$record) {
+                continue; // tidak ada data ekskul untuk mapel ini, skip
+            }
+
+            $predikat = $record->predikat ?? null;
+            $nilaiHuruf = $predikat ? ($predikatMap[$predikat] ?? $predikat) : '-';
+
+            $reportData[] = [
+                'mapel'              => $mapel->mata_pelajaran,
+                'nilai_akhir'        => $nilaiHuruf,
+                'nilai_kkm'          => null,
+                'tipe'               => 'ekskul',
+                'capaian_kompetensi' => $predikat ?? '-',
             ];
         }
 
