@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { router, useForm, usePage, Link } from '@inertiajs/react';
 import { Save, ArrowBack } from '@mui/icons-material';
-import Column from '@/Components/Coumn';
 
 export default function Create({
     rombels,
@@ -11,76 +10,91 @@ export default function Create({
     semesters,
     filters,
     students = [],
-    records = {},
+    records = {},   // { student_id: { category_id: predikat|'' } }
     canEdit = true,
 }) {
     const { flash } = usePage().props;
 
+    /**
+     * grid: { [studentId]: { [categoryId]: predikat|'' } }
+     * '' berarti ekskul ini tidak diikuti siswa tersebut
+     */
     const buildGrid = (source) => {
         const g = {};
         students.forEach((s) => {
-            const row = source[s.id] || {};
-            g[s.id] = {
-                extracurricular_category_id: row.extracurricular_category_id ?? '',
-                predikat: row.predikat ?? '',
-            };
+            g[s.id] = {};
+            categories.forEach((c) => {
+                g[s.id][c.id] = source[s.id]?.[c.id] ?? '';
+            });
         });
         return g;
     };
 
-    const [grid, setGrid] = useState(() => buildGrid(records));
+    const [grid, setGrid]   = useState(() => buildGrid(records));
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         setGrid(buildGrid(records));
-    }, [records, students]);
-
-    const updateRow = (studentId, field, value) => {
-        setGrid((prev) => ({
-            ...prev,
-            [studentId]: { ...prev[studentId], [field]: value },
-        }));
-    };
-
-    const handleSave = (e) => {
-        e.preventDefault();
-        const payload = students.map((s) => ({
-            student_id: s.id,
-            extracurricular_category_id: grid[s.id]?.extracurricular_category_id || null,
-            predikat: grid[s.id]?.predikat || null,
-        }));
-
-        setSaving(true);
-        router.post('/extracurriculars', {
-            rombel_id: filters.rombel_id,
-            semester: filters.semester,
-            records: payload,
-        }, {
-            preserveScroll: true,
-            onFinish: () => setSaving(false),
-        });
-    };
+    }, [records, students, categories]);
 
     const filterForm = useForm({
         rombel_id: filters.rombel_id || '',
-        semester: filters.semester || '',
+        semester:  filters.semester  || '',
     });
 
     const applyFilters = () => {
         router.get('/extracurriculars/create', filterForm.data, { preserveState: false });
     };
 
-    const wajibCategories = categories.filter((c) => c.jenis === 'wajib');
+    /** Ubah predikat pada (studentId, categoryId). Kosongkan → hapus dari grid */
+    const updateCell = (studentId, categoryId, value) => {
+        setGrid((prev) => ({
+            ...prev,
+            [studentId]: { ...prev[studentId], [categoryId]: value },
+        }));
+    };
+
+    const handleSave = (e) => {
+        e.preventDefault();
+        const payload = [];
+
+        students.forEach((s) => {
+            categories.forEach((c) => {
+                const predikat = grid[s.id]?.[c.id] ?? '';
+                if (predikat !== '') {
+                    payload.push({
+                        student_id:                   s.id,
+                        extracurricular_category_id:  c.id,
+                        predikat,
+                    });
+                }
+            });
+        });
+
+        setSaving(true);
+        router.post('/extracurriculars', {
+            rombel_id: filters.rombel_id,
+            semester:  filters.semester,
+            records:   payload,
+        }, {
+            preserveScroll: true,
+            onFinish: () => setSaving(false),
+        });
+    };
+
+    const wajibCategories   = categories.filter((c) => c.jenis === 'wajib');
     const pilihanCategories = categories.filter((c) => c.jenis === 'pilihan');
+    const allCategories     = [...wajibCategories, ...pilihanCategories];
 
     return (
-        <AppLayout title="Input Absensi & Ekskul">
+        <AppLayout title="Input Ekskul">
             {flash?.message && (
                 <div className="mb-4 p-4 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl">
                     {flash.message}
                 </div>
             )}
 
+            {/* Filter */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-6">
                 <div className="flex justify-between items-center mb-4">
                     <div>
@@ -121,25 +135,23 @@ export default function Create({
                             ))}
                         </select>
                     </div>
-                    <div>
-                        <button
-                            type="button"
-                            onClick={applyFilters}
-                            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl w-full transition-colors"
-                        >
-                            Tampilkan Form
-                        </button>
-                    </div>
+                    <button
+                        type="button"
+                        onClick={applyFilters}
+                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors"
+                    >
+                        Tampilkan Form
+                    </button>
                 </div>
             </div>
 
             {!filters.rombel_id || !filters.semester ? (
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-amber-800 text-sm">
-                    Silakan pilih rombel dan semester terlebih dulu untuk menampilkan form input.
+                    Silakan pilih rombel dan semester terlebih dulu.
                 </div>
             ) : categories.length === 0 ? (
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-amber-800 text-sm">
-                    Belum ada kategori ekskul. Jalankan seeder: <code className="font-mono">php artisan db:seed --class=ExtracurricularCategorySeeder</code>
+                    Belum ada kategori ekskul.
                 </div>
             ) : students.length === 0 ? (
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-amber-800 text-sm">
@@ -150,8 +162,10 @@ export default function Create({
                     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                         <div className="px-5 py-4 border-b border-slate-100 flex justify-between items-center">
                             <div>
-                                <p className="font-bold text-slate-800">Form Input Data</p>
-                                <p className="text-xs text-slate-400 mt-0.5">Isi ekskul, predikat, dan rekap absensi per siswa.</p>
+                                <p className="font-bold text-slate-800">Input Nilai Ekstrakurikuler</p>
+                                <p className="text-xs text-slate-400 mt-0.5">
+                                    Pilih predikat untuk ekskul yang diikuti. Kosongkan (–) jika siswa tidak mengikuti ekskul tersebut.
+                                </p>
                             </div>
                             <button
                                 type="submit"
@@ -164,62 +178,62 @@ export default function Create({
                         </div>
 
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left">
+                            <table className="w-full text-sm border-collapse">
                                 <thead>
-                                    <tr className="bg-slate-50 border-b border-slate-100">
-                                        <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-16">No</th>
-                                        <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Siswa</th>
-                                        <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider w-56">Ekstrakurikuler</th>
-                                        <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-36">Predikat</th>
+                                    <tr className="bg-slate-50 border-b border-slate-200">
+                                        <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase w-8 border-r border-slate-200">No</th>
+                                        <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase min-w-[180px] border-r border-slate-200">Nama Siswa</th>
+                                        {/* Kolom Wajib */}
+                                        {wajibCategories.map(c => (
+                                            <th key={c.id} className="px-3 py-3 text-center text-xs font-bold text-indigo-600 uppercase min-w-[120px] border-r border-slate-200 bg-indigo-50">
+                                                <div>{c.nama_ekskul}</div>
+                                                <div className="text-[10px] font-normal text-indigo-400 normal-case">Wajib</div>
+                                            </th>
+                                        ))}
+                                        {/* Kolom Pilihan */}
+                                        {pilihanCategories.map(c => (
+                                            <th key={c.id} className="px-3 py-3 text-center text-xs font-bold text-emerald-600 uppercase min-w-[120px] border-r border-slate-200 bg-emerald-50">
+                                                <div>{c.nama_ekskul}</div>
+                                                <div className="text-[10px] font-normal text-emerald-400 normal-case">Pilihan</div>
+                                            </th>
+                                        ))}
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
-                                    {students.map((student, idx) => {
-                                        const row = grid[student.id] || {};
-                                        return (
-                                            <tr key={student.id} className="hover:bg-slate-50/50 transition-colors">
-                                                <td className="px-5 py-4 text-sm font-medium text-slate-700 text-center">{idx + 1}</td>
-                                                <td className="px-5 py-4 text-sm font-semibold text-slate-900">{student.nama_lengkap}</td>
-                                                <td className="px-5 py-4">
-                                                    <select
-                                                        value={row.extracurricular_category_id}
-                                                        onChange={e => updateRow(student.id, 'extracurricular_category_id', e.target.value)}
-                                                        className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors"
-                                                    >
-                                                        <option value="">-- Pilih Ekskul --</option>
-                                                        {wajibCategories.length > 0 && (
-                                                            <optgroup label="Wajib">
-                                                                {wajibCategories.map(c => (
-                                                                    <option key={c.id} value={c.id}>{c.nama_ekskul}</option>
-                                                                ))}
-                                                            </optgroup>
-                                                        )}
-                                                        {pilihanCategories.length > 0 && (
-                                                            <optgroup label="Pilihan">
-                                                                {pilihanCategories.map(c => (
-                                                                    <option key={c.id} value={c.id}>{c.nama_ekskul}</option>
-                                                                ))}
-                                                            </optgroup>
-                                                        )}
-                                                    </select>
-                                                </td>
-                                                <td className="px-5 py-4">
-                                                    <select
-                                                        value={row.predikat}
-                                                        onChange={e => updateRow(student.id, 'predikat', e.target.value)}
-                                                        className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors text-center"
-                                                    >
-                                                        <option value="">-</option>
-                                                        {predikatOptions.map(p => (
-                                                            <option key={p} value={p}>{p}</option>
-                                                        ))}
-                                                    </select>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
+                                    {students.map((student, idx) => (
+                                        <tr key={student.id} className="hover:bg-slate-50/50">
+                                            <td className="px-4 py-3 text-center text-slate-500 border-r border-slate-100">{idx + 1}</td>
+                                            <td className="px-4 py-3 font-semibold text-slate-800 border-r border-slate-100">{student.nama_lengkap}</td>
+                                            {allCategories.map(c => {
+                                                const val = grid[student.id]?.[c.id] ?? '';
+                                                const isWajib = c.jenis === 'wajib';
+                                                return (
+                                                    <td key={c.id} className={`px-3 py-2 border-r border-slate-100 ${isWajib ? 'bg-indigo-50/30' : 'bg-emerald-50/20'}`}>
+                                                        <select
+                                                            value={val}
+                                                            onChange={e => updateCell(student.id, c.id, e.target.value)}
+                                                            className={`w-full px-2 py-1.5 rounded-lg border text-sm text-center transition-colors
+                                                                ${val
+                                                                    ? 'border-indigo-300 bg-white font-semibold text-indigo-700'
+                                                                    : 'border-slate-200 bg-white text-slate-400'
+                                                                }`}
+                                                        >
+                                                            <option value="">–</option>
+                                                            {predikatOptions.map(p => (
+                                                                <option key={p} value={p}>{p}</option>
+                                                            ))}
+                                                        </select>
+                                                    </td>
+                                                );
+                                            })}
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
+                        </div>
+
+                        <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 text-xs text-slate-400">
+                            Predikat: Sangat Baik = A · Baik = B · Cukup = C · Kurang = D pada rapor
                         </div>
                     </div>
                 </form>

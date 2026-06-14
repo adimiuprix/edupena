@@ -9,23 +9,35 @@ use Illuminate\Database\Seeder;
 class ExtracurricularCategorySeeder extends Seeder
 {
     /**
-     * Setiap kategori ekskul dikaitkan langsung ke mapel via mapel_id,
-     * bukan matching nama string, agar tidak ada kebocoran data di rapor.
+     * Setiap kategori ekskul dikaitkan langsung ke mapel via mapel_id.
+     * Data diambil otomatis dari mapels berkategori 'Ekstrakurikuler',
+     * sehingga tidak perlu hardcode nama — tidak ada risiko mismatch.
+     *
+     * jenis:
+     *   wajib   = semua siswa wajib mengikuti
+     *   pilihan = siswa memilih salah satu
      */
+    private array $jenisMap = [
+        'Pramuka'       => 'wajib',
+        'Bahasa Inggris'=> 'pilihan',
+        'Ngaji'         => 'pilihan',
+        'Seni Tari'     => 'pilihan',
+    ];
+
     public function run(): void
     {
-        $categories = [
-            ['nama_ekskul' => 'Pramuka', 'jenis' => 'wajib', 'mapel_nama' => 'Pramuka'],
-        ];
+        // Ambil semua mapel berkategori Ekstrakurikuler
+        $mapelsEkskul = Mapel::whereHas('category', fn ($q) => $q->where('kategori', 'Ekstrakurikuler'))
+            ->get();
 
-        foreach ($categories as $cat) {
-            $mapel = Mapel::where('mata_pelajaran', $cat['mapel_nama'])->first();
+        foreach ($mapelsEkskul as $mapel) {
+            $jenis = $this->jenisMap[$mapel->mata_pelajaran] ?? 'pilihan';
 
             ExtracurricularCategory::updateOrCreate(
-                ['nama_ekskul' => $cat['nama_ekskul']],
+                ['mapel_id' => $mapel->id],   // cari berdasarkan mapel_id (unik & stabil)
                 [
-                    'jenis'     => $cat['jenis'],
-                    'mapel_id'  => $mapel?->id,
+                    'nama_ekskul' => $mapel->mata_pelajaran,
+                    'jenis'       => $jenis,
                 ]
             );
         }

@@ -20,30 +20,27 @@ class ExtracurricularAttendanceController extends Controller
 
     public function index(Request $request): Response
     {
-        $rombels = Rombel::orderBy('tingkat')->orderBy('nama_rombel')->get(['id', 'tingkat', 'nama_rombel']);
+        $rombels    = Rombel::orderBy('tingkat')->orderBy('nama_rombel')->get(['id', 'tingkat', 'nama_rombel']);
         $categories = ExtracurricularCategory::with('mapel')
             ->orderBy('jenis')->orderBy('nama_ekskul')->get();
 
         $defaultSemester = $this->normalizeSemester(Setting::where('key', 'semester_aktif')->value('value'));
 
         $rombelId = $request->integer('rombel_id') ?: null;
-        $semester = $this->normalizeSemester($request->get('semester')) ?: $defaultSemester;
+        $semester  = $this->normalizeSemester($request->get('semester')) ?: $defaultSemester;
 
         $payload = [
-            'rombels' => $rombels,
-            'categories' => $categories,
-            'predikatOptions' => self::PREDIKAT_OPTIONS,
-            'semesters' => [
+            'rombels'        => $rombels,
+            'categories'     => $categories,
+            'predikatOptions'=> self::PREDIKAT_OPTIONS,
+            'semesters'      => [
                 ['value' => 'ganjil', 'label' => 'Ganjil'],
-                ['value' => 'genap', 'label' => 'Genap'],
+                ['value' => 'genap',  'label' => 'Genap'],
             ],
-            'filters' => [
-                'rombel_id' => $rombelId,
-                'semester' => $semester,
-            ],
+            'filters'  => ['rombel_id' => $rombelId, 'semester' => $semester],
             'students' => [],
-            'records' => [],
-            'canEdit' => false,
+            'records'  => [],   // { student_id: [ {category_id, predikat}, ... ] }
+            'canEdit'  => false,
         ];
 
         if (! $rombelId || ! $semester) {
@@ -59,145 +56,143 @@ class ExtracurricularAttendanceController extends Controller
             ->whereIn('student_id', $students->pluck('id'))
             ->get();
 
+        // Kelompokkan per student_id → array ekskul
         $records = [];
         foreach ($students as $student) {
-            $row = $existing->firstWhere('student_id', $student->id);
-            $records[$student->id] = [
-                'id' => $row?->id,
-                'extracurricular_category_id' => $row?->extracurricular_category_id ?? '',
-                'predikat' => $row?->predikat ?? '',
-                'sakit' => $row?->sakit ?? 0,
-                'ijin' => $row?->ijin ?? 0,
-                'alpa' => $row?->alpa ?? 0,
-                'nama_ekskul' => $row?->category?->nama_ekskul,
-            ];
+            $rows = $existing->where('student_id', $student->id)->values();
+            $records[$student->id] = $rows->map(fn ($r) => [
+                'id'                          => $r->id,
+                'extracurricular_category_id' => $r->extracurricular_category_id,
+                'predikat'                    => $r->predikat,
+                'nama_ekskul'                 => $r->category?->nama_ekskul,
+            ])->toArray();
         }
 
         $payload['students'] = $students;
-        $payload['records'] = $records;
-        $payload['canEdit'] = $students->isNotEmpty();
+        $payload['records']  = $records;
+        $payload['canEdit']  = $students->isNotEmpty();
 
         return Inertia::render('Extracurriculars/Index', $payload);
     }
 
     public function create(Request $request): Response
     {
-        $rombels = Rombel::orderBy('tingkat')->orderBy('nama_rombel')->get(['id', 'tingkat', 'nama_rombel']);
+        $rombels    = Rombel::orderBy('tingkat')->orderBy('nama_rombel')->get(['id', 'tingkat', 'nama_rombel']);
         $categories = ExtracurricularCategory::with('mapel')
             ->orderBy('jenis')->orderBy('nama_ekskul')->get();
         $defaultSemester = $this->normalizeSemester(Setting::where('key', 'semester_aktif')->value('value'));
-        $semester = $this->normalizeSemester($request->get('semester')) ?: $defaultSemester;
-        $rombelId = $request->integer('rombel_id') ?: null;
+        $semester  = $this->normalizeSemester($request->get('semester')) ?: $defaultSemester;
+        $rombelId  = $request->integer('rombel_id') ?: null;
 
         $students = $rombelId
             ? Student::where('rombel_id', $rombelId)->orderBy('nama_lengkap')->get(['id', 'nama_lengkap'])
             : collect();
 
+        // records: { student_id: { category_id: predikat, ... } }
         $records = [];
         if ($rombelId && $semester) {
             $existing = ExtracurricularAttendance::where('semester', $semester)
                 ->whereIn('student_id', $students->pluck('id'))
                 ->get();
-            foreach ($existing as $rec) {
-                $records[$rec->student_id] = [
-                    'extracurricular_category_id' => $rec->extracurricular_category_id,
-                    'predikat' => $rec->predikat,
-                    'sakit' => $rec->sakit,
-                    'ijin' => $rec->ijin,
-                    'alpa' => $rec->alpa,
-                ];
+
+            foreach ($students as $student) {
+                $studentRows = $existing->where('student_id', $student->id);
+                $records[$student->id] = [];
+                foreach ($studentRows as $rec) {
+                    $records[$student->id][(string)$rec->extracurricular_category_id] = $rec->predikat ?? '';
+                }
             }
         }
 
-        $payload = [
-            'rombels' => $rombels,
-            'categories' => $categories,
-            'predikatOptions' => self::PREDIKAT_OPTIONS,
-            'semesters' => [
+        return Inertia::render('Extracurriculars/Create', [
+            'rombels'        => $rombels,
+            'categories'     => $categories,
+            'predikatOptions'=> self::PREDIKAT_OPTIONS,
+            'semesters'      => [
                 ['value' => 'ganjil', 'label' => 'Ganjil'],
-                ['value' => 'genap', 'label' => 'Genap'],
+                ['value' => 'genap',  'label' => 'Genap'],
             ],
-            'filters' => [
-                'rombel_id' => $rombelId,
-                'semester' => $semester,
-            ],
+            'filters'  => ['rombel_id' => $rombelId, 'semester' => $semester],
             'students' => $students,
-            'records' => $records,
-            'canEdit' => true,
-        ];
-        return Inertia::render('Extracurriculars/Create', $payload);
+            'records'  => $records,
+            'canEdit'  => true,
+        ]);
     }
-
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'rombel_id' => 'required|exists:rombels,id',
-            'semester' => 'required|in:ganjil,genap',
-            'records' => 'required|array',
-            'records.*.student_id' => 'required|exists:students,id',
-            'records.*.extracurricular_category_id' => 'nullable|exists:extracurricular_categories,id',
-            'records.*.predikat' => ['nullable', Rule::in(self::PREDIKAT_OPTIONS)],
-            'records.*.sakit' => 'nullable|integer|min:0',
-            'records.*.ijin' => 'nullable|integer|min:0',
-            'records.*.alpa' => 'nullable|integer|min:0',
+            'rombel_id'                           => 'required|exists:rombels,id',
+            'semester'                            => 'required|in:ganjil,genap',
+            'records'                             => 'required|array',
+            // records: array of { student_id, extracurricular_category_id, predikat }
+            'records.*.student_id'                => 'required|exists:students,id',
+            'records.*.extracurricular_category_id' => 'required|exists:extracurricular_categories,id',
+            'records.*.predikat'                  => ['nullable', Rule::in(self::PREDIKAT_OPTIONS)],
         ]);
 
-        $validStudentIds = Student::where('rombel_id', $validated['rombel_id'])->pluck('id')->all();
-        $semester = $validated['semester'];
+        $validStudentIds   = Student::where('rombel_id', $validated['rombel_id'])->pluck('id')->all();
+        $validCategoryIds  = ExtracurricularCategory::pluck('id')->all();
+        $semester          = $validated['semester'];
 
-        DB::transaction(function () use ($validated, $validStudentIds, $semester) {
+        DB::transaction(function () use ($validated, $validStudentIds, $validCategoryIds, $semester) {
+            // Kumpulkan kombinasi (student_id, category_id) yang dikirim
+            $submitted = [];
+
             foreach ($validated['records'] as $row) {
-                if (! in_array((int) $row['student_id'], $validStudentIds, true)) {
-                    continue;
-                }
+                $studentId  = (int) $row['student_id'];
+                $categoryId = (int) $row['extracurricular_category_id'];
 
-                $hasEkskul = ! empty($row['extracurricular_category_id']);
-                $hasAbsensi = ($row['sakit'] ?? 0) > 0 || ($row['ijin'] ?? 0) > 0 || ($row['alpa'] ?? 0) > 0;
-                $hasPredikat = ! empty($row['predikat']);
+                if (! in_array($studentId, $validStudentIds, true)) continue;
+                if (! in_array($categoryId, $validCategoryIds, true)) continue;
 
-                if (! $hasEkskul && ! $hasAbsensi && ! $hasPredikat) {
-                    ExtracurricularAttendance::where('student_id', $row['student_id'])
-                        ->where('semester', $semester)
-                        ->delete();
-
-                    continue;
-                }
+                $predikat = $row['predikat'] ?? null;
 
                 ExtracurricularAttendance::updateOrCreate(
                     [
-                        'student_id' => $row['student_id'],
-                        'semester' => $semester,
+                        'student_id'                  => $studentId,
+                        'semester'                    => $semester,
+                        'extracurricular_category_id' => $categoryId,
                     ],
-                    [
-                        'extracurricular_category_id' => $row['extracurricular_category_id'] ?? null,
-                        'predikat' => $row['predikat'] ?? null,
-                        'sakit' => $row['sakit'] ?? 0,
-                        'ijin' => $row['ijin'] ?? 0,
-                        'alpa' => $row['alpa'] ?? 0,
-                    ]
+                    ['predikat' => $predikat]
                 );
+
+                $submitted[] = ['student_id' => $studentId, 'category_id' => $categoryId];
+            }
+
+            // Hapus record lama untuk siswa yang dikirim tapi tidak ada di payload (ekskul dihapus)
+            $submittedStudentIds = array_unique(array_column($submitted, 'student_id'));
+            if (empty($submittedStudentIds)) return;
+
+            $existing = ExtracurricularAttendance::where('semester', $semester)
+                ->whereIn('student_id', $submittedStudentIds)
+                ->get();
+
+            foreach ($existing as $rec) {
+                $isInPayload = collect($submitted)->contains(
+                    fn ($s) => $s['student_id'] === $rec->student_id
+                        && $s['category_id'] === (int) $rec->extracurricular_category_id
+                );
+                if (! $isInPayload) {
+                    $rec->delete();
+                }
             }
         });
 
         return redirect()
             ->route('extracurriculars.index', [
                 'rombel_id' => $validated['rombel_id'],
-                'semester' => $semester,
+                'semester'  => $semester,
             ])
-            ->with('message', 'Data ekskul dan absensi berhasil disimpan.');
+            ->with('message', 'Data ekskul berhasil disimpan.');
     }
 
     private function normalizeSemester(?string $value): ?string
     {
-        if (! $value) {
-            return null;
-        }
-
+        if (! $value) return null;
         $lower = strtolower(trim($value));
-
         return match (true) {
-            str_contains($lower, 'genap') => 'genap',
+            str_contains($lower, 'genap')  => 'genap',
             str_contains($lower, 'ganjil') => 'ganjil',
             default => in_array($lower, ['ganjil', 'genap'], true) ? $lower : null,
         };

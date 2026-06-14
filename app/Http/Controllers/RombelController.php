@@ -14,9 +14,11 @@ class RombelController extends Controller
 
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where('nama_rombel', 'like', "%{$search}%")
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_rombel', 'like', "%{$search}%")
                   ->orWhere('tingkat', 'like', "%{$search}%")
                   ->orWhere('tahun_ajaran', 'like', "%{$search}%");
+            });
         }
 
         $rombels = $query->with('waliKelas')->latest()->paginate(10)->withQueryString();

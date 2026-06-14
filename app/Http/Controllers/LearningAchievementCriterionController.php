@@ -20,7 +20,8 @@ class LearningAchievementCriterionController extends Controller
     public function index(Request $request): Response
     {
         $rombels = Rombel::orderBy('tingkat')->orderBy('nama_rombel')->get(['id', 'tingkat', 'nama_rombel']);
-        $mapels = Mapel::orderBy('mata_pelajaran')->get(['id', 'mata_pelajaran']);
+        $mapels = Mapel::whereHas('category', fn($q) => $q->where('kategori', '!=', 'Ekstrakurikuler'))
+            ->orderBy('mata_pelajaran')->get(['id', 'mata_pelajaran']);
 
         $defaultSemester = $this->normalizeSemester(Setting::where('key', 'semester_aktif')->value('value'));
 

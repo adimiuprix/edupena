@@ -80,9 +80,11 @@ class AttendanceController extends Controller
                     continue;
                 }
 
-                $hasData = ($row['sakit'] ?? 0) > 0 || ($row['ijin'] ?? 0) > 0 || ($row['alpa'] ?? 0) > 0;
+                // Hapus hanya jika semua field null (belum pernah diisi sama sekali)
+                // Nilai 0 tetap disimpan agar bisa dibedakan dari "belum diisi"
+                $allNull = !isset($row['sakit']) && !isset($row['ijin']) && !isset($row['alpa']);
 
-                if (!$hasData) {
+                if ($allNull) {
                     Attendance::where('student_id', $row['student_id'])
                         ->where('semester', $semester)
                         ->delete();

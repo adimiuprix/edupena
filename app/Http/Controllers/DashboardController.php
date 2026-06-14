@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attendance;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\Mapel;
 use App\Models\StudentScore;
 use App\Models\Setting;
-use App\Models\ExtracurricularAttendance;
 use App\Models\Target;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -22,9 +22,9 @@ class DashboardController extends Controller
         $totalSiswaL = Student::where('jenis_kelamin', 'L')->count();
         $totalSiswaP = Student::where('jenis_kelamin', 'P')->count();
 
-        // Statistik Kehadiran (Semester Aktif)
+        // Statistik Kehadiran (Semester Aktif) — dari tabel attendances (absensi sekolah)
         $semesterAktif = Setting::where('key', 'semester_aktif')->value('value') ?? 'ganjil';
-        $attendances = ExtracurricularAttendance::where('semester', $semesterAktif)->get();
+        $attendances = Attendance::where('semester', $semesterAktif)->get();
         $totalSakit = $attendances->sum('sakit');
         $totalIzin = $attendances->sum('ijin');
         $totalAlpa = $attendances->sum('alpa');

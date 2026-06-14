@@ -45,7 +45,8 @@ class RecapController extends Controller
             return Inertia::render('Recaps/Index', $payload);
         }
 
-        $mapels = Mapel::orderBy('mata_pelajaran')->get(['id', 'mata_pelajaran']);
+        $mapels = Mapel::whereHas('category', fn($q) => $q->where('kategori', '!=', 'Ekstrakurikuler'))
+            ->orderBy('mata_pelajaran')->get(['id', 'mata_pelajaran']);
         $students = Student::with([
             'extracurricularAttendances' => function($query) use ($semester) {
                 $query->where('semester', $semester)->with('category');
@@ -97,18 +98,30 @@ class RecapController extends Controller
                 'sakit' => $sakit,
                 'ijin' => $ijin,
                 'alpa' => $alpa,
-                'ekskul' => $kehadiran?->category?->name ?? '-',
+                'ekskul' => $kehadiran?->category?->nama_ekskul ?? '-',
                 'predikat_ekskul' => $kehadiran?->predikat ?? '-',
             ];
         }
 
-        // Calculate Ranking
+        // Ranking: siswa dengan nilai sama mendapat ranking yang sama
         usort($studentsData, fn($a, $b) => $b['total_nilai'] <=> $a['total_nilai']);
-        
+
         $rank = 1;
-        foreach ($studentsData as &$sd) {
-            $sd['ranking'] = $sd['total_nilai'] > 0 ? $rank++ : '-';
+        $prevNilai = null;
+        $prevRank = 1;
+        foreach ($studentsData as $i => &$sd) {
+            if ($sd['total_nilai'] <= 0) {
+                $sd['ranking'] = '-';
+                continue;
+            }
+            if ($sd['total_nilai'] !== $prevNilai) {
+                $prevRank = $rank;
+                $prevNilai = $sd['total_nilai'];
+            }
+            $sd['ranking'] = $prevRank;
+            $rank++;
         }
+        unset($sd);
         
         // Re-sort by name
         usort($studentsData, fn($a, $b) => strcmp($a['nama'], $b['nama']));

@@ -63,8 +63,8 @@ export default function Show({ student, rombel, semester, reportData, kehadiran,
         
         // Hitung total ketidakhadiran
         const totalAbsen = (absensi?.sakit || 0) + (absensi?.ijin || 0) + (absensi?.alpa || 0);
-        // Asumsi total hari efektif 200 hari per tahun, atau bisa disesuaikan
-        const totalHariEfektif = 200;
+        // Ambil dari settings jika ada, default 200 hari per tahun
+        const totalHariEfektif = parseInt(settings?.total_hari_efektif) || 200;
         const persenKehadiran = totalHariEfektif > 0 ? ((totalHariEfektif - totalAbsen) / totalHariEfektif) * 100 : 100;
 
         // Kriteria Kenaikan Kelas Kurikulum Merdeka:
@@ -185,22 +185,13 @@ export default function Show({ student, rombel, semester, reportData, kehadiran,
                         </tr>
                     </thead>
                     <tbody>
-                        {reportData.length > 0 ? (
-                            reportData.map((data, index) => (
+                        {reportData.filter(d => d.tipe !== 'ekskul').length > 0 ? (
+                            reportData.filter(d => d.tipe !== 'ekskul').map((data, index) => (
                                 <tr key={index} className={index % 2 === 1 ? 'row-alt' : ''}>
                                     <td className="td-no">{index + 1}</td>
                                     <td className="td-mapel">{data.mapel}</td>
-                                    {data.tipe === 'ekskul' ? (
-                                        <td className="td-nilai td-nilai-huruf">{data.nilai_akhir ?? '-'}</td>
-                                    ) : (
-                                        <td className="td-nilai">{data.nilai_akhir ?? '-'}</td>
-                                    )}
-                                    <td className="td-deskripsi">
-                                        {data.tipe === 'ekskul'
-                                            ? (data.capaian_kompetensi || '-')
-                                            : (data.capaian_kompetensi || '-')
-                                        }
-                                    </td>
+                                    <td className="td-nilai">{data.nilai_akhir ?? '-'}</td>
+                                    <td className="td-deskripsi">{data.capaian_kompetensi || '-'}</td>
                                 </tr>
                             ))
                         ) : (
@@ -230,12 +221,14 @@ export default function Show({ student, rombel, semester, reportData, kehadiran,
                                 </tr>
                             </thead>
                             <tbody>
-                                {kehadiran?.category ? (
-                                    <tr>
-                                        <td className="td-no">1</td>
-                                        <td>{kehadiran.category.name}</td>
-                                        <td className="td-predikat">{kehadiran.predikat || '-'}</td>
-                                    </tr>
+                                {kehadiran?.length > 0 ? (
+                                    kehadiran.map((k, i) => (
+                                        <tr key={i}>
+                                            <td className="td-no">{i + 1}</td>
+                                            <td>{k.category?.nama_ekskul || k.category?.name || '-'}</td>
+                                            <td className="td-predikat">{k.predikat || '-'}</td>
+                                        </tr>
+                                    ))
                                 ) : (
                                     <tr>
                                         <td colSpan="3" className="td-empty">Tidak mengikuti ekstrakurikuler.</td>

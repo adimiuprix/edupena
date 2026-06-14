@@ -83,7 +83,6 @@ class ReportController extends Controller
             ->keyBy('mapel_id');
 
         $reportData = [];
-        $kkmData = [];
 
         // ── Mapel Akademik (Pendidikan Umum + Muatan Lokal) ──────────────────
         foreach ($mapelsAkademik as $mapel) {
@@ -141,11 +140,6 @@ class ReportController extends Controller
                     ? implode(". ", $capaian) . "."
                     : '-',
             ];
-
-            $kkmData[] = [
-                'mapel_id' => $mapel->id,
-                'nilai_kkm' => $nilaiKkm,
-            ];
         }
 
         // ── Mapel Ekstrakurikuler — nilai dari predikat absensi ekskul ────────
@@ -183,7 +177,7 @@ class ReportController extends Controller
         $kehadiran = $student->extracurricularAttendances()
             ->with('category')
             ->where('semester', $semester)
-            ->first();
+            ->get();
             
         $absen = $student->attendances()->where('semester', $semester)->first();
 
@@ -217,7 +211,6 @@ class ReportController extends Controller
             ],
             'settings'    => $settings,
             'waliKelasNip' => $waliKelasNip,
-            'kkmData'     => $kkmData,
         ]);
     }
 
