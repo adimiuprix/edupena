@@ -118,53 +118,49 @@ export default function Show({ student, rombel, semester, reportData, kehadiran,
             <div className="rapor-page print:mt-0 mt-20 mb-10 mx-auto print:mx-0 print:shadow-none bg-white shadow-2xl">
 
                 {/* ════════════════════════════════════════
-                    JUDUL
+                    KOP / KEPALA RAPOR
                 ════════════════════════════════════════ */}
                 <div className="judul-wrapper">
-                    <div className="judul-utama">LAPORAN HASIL BELAJAR PESERTA DIDIK</div>
-                    <div className="judul-sub">
-                        Semester {semesterLabel} &nbsp;&bull;&nbsp; Tahun Pelajaran {settings.tahun_ajaran_aktif || rombel.tahun_ajaran || '-'}
-                    </div>
+                    <div className="judul-utama">LAPORAN HASIL BELAJAR</div>
                 </div>
 
-                {/* ════════════════════════════════════════
-                    IDENTITAS SISWA
-                ════════════════════════════════════════ */}
-                <table className="tabel-identitas">
+                <table className="tabel-kop">
                     <tbody>
                         <tr>
-                            <td className="id-label">Nama Peserta Didik</td>
-                            <td className="id-sep">:</td>
-                            <td className="id-value"><strong>{student.nama_lengkap || '-'}</strong></td>
-                            <td className="id-label">Kelas</td>
-                            <td className="id-sep">:</td>
-                            <td className="id-value">{rombel.tingkat} - {rombel.nama_rombel}</td>
+                            <td className="kop-label">Nama Peserta Didik</td>
+                            <td className="kop-sep">:</td>
+                            <td className="kop-value"><strong>{student.nama_lengkap || '-'}</strong></td>
+                            <td className="kop-label-right">Kelas</td>
+                            <td className="kop-sep">:</td>
+                            <td className="kop-value-right">{rombel.tingkat} ({rombel.nama_rombel})</td>
                         </tr>
                         <tr>
-                            <td className="id-label">NISN</td>
-                            <td className="id-sep">:</td>
-                            <td className="id-value">{student.nisn || '-'}</td>
-                            <td className="id-label">Fase</td>
-                            <td className="id-sep">:</td>
-                            <td className="id-value">{fase}</td>
+                            <td className="kop-label">NISN</td>
+                            <td className="kop-sep">:</td>
+                            <td className="kop-value">{student.nisn || '-'}</td>
+                            <td className="kop-label-right">Fase</td>
+                            <td className="kop-sep">:</td>
+                            <td className="kop-value-right">{fase}</td>
                         </tr>
                         <tr>
-                            <td className="id-label">NIS / NIPD</td>
-                            <td className="id-sep">:</td>
-                            <td className="id-value">{student.nipd || '-'}</td>
-                            <td className="id-label">Agama</td>
-                            <td className="id-sep">:</td>
-                            <td className="id-value">{student.agama || '-'}</td>
+                            <td className="kop-label">Sekolah</td>
+                            <td className="kop-sep">:</td>
+                            <td className="kop-value">{settings.nama_sekolah || '-'}</td>
+                            <td className="kop-label-right">Semester</td>
+                            <td className="kop-sep">:</td>
+                            <td className="kop-value-right">{semesterLabel}</td>
                         </tr>
                         <tr>
-                            <td className="id-label">Tempat, Tgl Lahir</td>
-                            <td className="id-sep">:</td>
-                            <td className="id-value">
-                                {student.tempat_lahir ? `${student.tempat_lahir}, ` : ''}{formatTanggal(student.tanggal_lahir)}
+                            <td className="kop-label">Alamat</td>
+                            <td className="kop-sep">:</td>
+                            <td className="kop-value">
+                                {settings.alamat_sekolah || '-'}
+                                {settings.kabupaten_kota && `, ${settings.kabupaten_kota}`}
+                                {settings.provinsi && `, ${settings.provinsi}`}
                             </td>
-                            <td className="id-label">Wali Kelas</td>
-                            <td className="id-sep">:</td>
-                            <td className="id-value">{waliKelasNama || '-'}</td>
+                            <td className="kop-label-right">Tahun Pelajaran</td>
+                            <td className="kop-sep">:</td>
+                            <td className="kop-value-right">{settings.tahun_ajaran_aktif || rombel.tahun_ajaran || '-'}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -416,90 +412,53 @@ export default function Show({ student, rombel, semester, reportData, kehadiran,
                     line-height: 1.4;
                 }
 
-                /* ─ Kop ─ */
-                .kop-wrapper {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    margin-bottom: 6px;
-                }
-                .kop-logo {
-                    width: 64px;
-                    height: 64px;
-                    object-fit: contain;
-                    flex-shrink: 0;
-                }
-                .kop-text {
-                    flex: 1;
-                    text-align: center;
-                }
-                .kop-instansi {
-                    font-size: 9pt;
-                    letter-spacing: 0.02em;
-                }
-                .kop-nama-sekolah {
-                    font-size: 16pt;
-                    font-weight: 900;
-                    letter-spacing: 0.04em;
-                    line-height: 1.15;
-                }
-                .kop-alamat {
-                    font-size: 8.5pt;
-                    margin-top: 2px;
-                }
-                .kop-kontak, .kop-npsn {
-                    font-size: 8pt;
-                    color: #333;
-                }
-                .kop-garis-luar {
-                    border-top: 3px solid #000;
-                    margin-bottom: 2px;
-                }
-                .kop-garis-dalam {
-                    border-top: 1px solid #000;
-                    margin-bottom: 10px;
-                }
-
                 /* ─ Judul ─ */
                 .judul-wrapper {
                     text-align: center;
-                    margin-bottom: 8px;
+                    margin-bottom: 10px;
                 }
                 .judul-utama {
-                    font-size: 12pt;
+                    font-size: 13pt;
                     font-weight: 700;
                     text-transform: uppercase;
-                    letter-spacing: 0.03em;
+                    letter-spacing: 0.04em;
+                    line-height: 1.2;
                 }
                 .judul-sub {
-                    font-size: 9.5pt;
-                    margin-top: 2px;
-                }
-
-                /* ─ Identitas Siswa ─ */
-                .tabel-identitas {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin-bottom: 6px;
-                    font-size: 9.5pt;
-                }
-                .tabel-identitas td {
-                    padding: 1.5px 3px;
-                    vertical-align: top;
-                }
-                .id-label {
-                    width: 110px;
-                    white-space: nowrap;
+                    font-size: 11pt;
+                    margin-top: 1px;
                     font-weight: 600;
                 }
-                .id-sep {
+
+                /* ─ Tabel Kop (2 Kolom) ─ */
+                .tabel-kop {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 10px;
+                    font-size: 9.5pt;
+                }
+                .tabel-kop td {
+                    padding: 2px 3px;
+                    vertical-align: top;
+                }
+                .kop-label {
+                    width: 130px;
+                    font-weight: 600;
+                }
+                .kop-sep {
                     width: 10px;
                     text-align: center;
-                    padding: 1.5px 2px;
                 }
-                .id-value {
-                    width: 180px;
-                    padding-right: 12px;
+                .kop-value {
+                    width: 240px;
+                    padding-right: 16px;
+                }
+                .kop-label-right {
+                    width: 110px;
+                    font-weight: 600;
+                }
+                .kop-value-right {
+                    width: auto;
                 }
 
                 /* ─ Divider ─ */
