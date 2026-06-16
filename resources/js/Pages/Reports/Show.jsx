@@ -22,6 +22,53 @@ function getTanggalCetak(settings) {
     return `${kota}, ${tanggal}`;
 }
 
+// Urutan standar mapel Kurikulum Merdeka untuk Pendidikan Umum
+function sortMapelAkademik(mapelList) {
+    const urutanStandar = [
+        'Pendidikan Agama dan Budi Pekerti',
+        'Pendidikan Agama Islam dan Budi Pekerti',
+        'Pendidikan Agama Kristen dan Budi Pekerti',
+        'Pendidikan Agama Katolik dan Budi Pekerti',
+        'Pendidikan Agama Hindu dan Budi Pekerti',
+        'Pendidikan Agama Buddha dan Budi Pekerti',
+        'Pendidikan Agama Khonghucu dan Budi Pekerti',
+        'Pendidikan Pancasila',
+        'Bahasa Indonesia',
+        'Matematika',
+        'Ilmu Pengetahuan Alam dan Sosial',
+        'IPAS',
+        'Pendidikan Jasmani Olahraga dan Kesehatan',
+        'PJOK',
+        'Seni dan Budaya',
+        'Bahasa Inggris',
+    ];
+
+    return mapelList.sort((a, b) => {
+        const indexA = urutanStandar.findIndex(nama => 
+            a.mapel.toLowerCase().includes(nama.toLowerCase()) || 
+            nama.toLowerCase().includes(a.mapel.toLowerCase())
+        );
+        const indexB = urutanStandar.findIndex(nama => 
+            b.mapel.toLowerCase().includes(nama.toLowerCase()) || 
+            nama.toLowerCase().includes(b.mapel.toLowerCase())
+        );
+
+        // Jika kedua mapel ada di urutan standar, sort berdasarkan index
+        if (indexA !== -1 && indexB !== -1) {
+            return indexA - indexB;
+        }
+        
+        // Jika hanya A yang ada di urutan standar, A lebih dulu
+        if (indexA !== -1) return -1;
+        
+        // Jika hanya B yang ada di urutan standar, B lebih dulu
+        if (indexB !== -1) return 1;
+        
+        // Jika kedua tidak ada di urutan standar, sort alfabetis
+        return a.mapel.localeCompare(b.mapel, 'id');
+    });
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function Show({ student, rombel, semester, reportData, kehadiran, absensi, settings, waliKelasNip }) {
@@ -181,20 +228,25 @@ export default function Show({ student, rombel, semester, reportData, kehadiran,
                         </tr>
                     </thead>
                     <tbody>
-                        {reportData.filter(d => d.tipe === 'akademik').length > 0 ? (
-                            reportData.filter(d => d.tipe === 'akademik').map((data, index) => (
-                                <tr key={index} className={index % 2 === 1 ? 'row-alt' : ''}>
-                                    <td className="td-no">{index + 1}</td>
-                                    <td className="td-mapel">{data.mapel}</td>
-                                    <td className="td-nilai">{data.nilai_akhir ?? '-'}</td>
-                                    <td className="td-deskripsi">{data.capaian_kompetensi || '-'}</td>
+                        {(() => {
+                            const akademikData = reportData.filter(d => d.tipe === 'akademik');
+                            const sortedData = sortMapelAkademik([...akademikData]);
+                            
+                            return sortedData.length > 0 ? (
+                                sortedData.map((data, index) => (
+                                    <tr key={index} className={index % 2 === 1 ? 'row-alt' : ''}>
+                                        <td className="td-no">{index + 1}</td>
+                                        <td className="td-mapel">{data.mapel}</td>
+                                        <td className="td-nilai">{data.nilai_akhir ?? '-'}</td>
+                                        <td className="td-deskripsi">{data.capaian_kompetensi || '-'}</td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="4" className="td-empty">Belum ada nilai yang diinputkan.</td>
                                 </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="4" className="td-empty">Belum ada nilai yang diinputkan.</td>
-                            </tr>
-                        )}
+                            );
+                        })()}
                     </tbody>
                 </table>
 
