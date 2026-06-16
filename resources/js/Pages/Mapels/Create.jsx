@@ -9,12 +9,16 @@ export default function Create({ categories }) {
     const { data, setData, post, processing, errors } = useForm({
         category_mapels_id: '',
         mata_pelajaran: '',
+        jenis_ekskul: '',
     });
 
     const submit = (e) => {
         e.preventDefault();
         post('/mapels');
     };
+
+    // Cek apakah kategori yang dipilih adalah ekstrakurikuler (id = 3)
+    const isEkstrakurikuler = data.category_mapels_id == 3;
 
     return (
         <AppLayout title="Tambah Mata Pelajaran">
@@ -50,6 +54,22 @@ export default function Create({ categories }) {
                         />
                         <InputError message={errors.mata_pelajaran} />
                     </div>
+
+                    {isEkstrakurikuler && (
+                        <div>
+                            <InputLabel value="Jenis Ekstrakurikuler" required />
+                            <select
+                                value={data.jenis_ekskul}
+                                onChange={e => setData('jenis_ekskul', e.target.value)}
+                                className={`w-full px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:border-transparent transition-all ${errors.jenis_ekskul ? 'border-red-300 bg-red-50 focus:ring-red-500 text-red-900' : 'border-slate-200 bg-slate-50 focus:ring-indigo-500 text-slate-800'}`}
+                            >
+                                <option value="">-- Pilih Jenis --</option>
+                                <option value="wajib">Wajib</option>
+                                <option value="pilihan">Pilihan</option>
+                            </select>
+                            <InputError message={errors.jenis_ekskul} />
+                        </div>
+                    )}
 
                     <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
                         <Link href="/mapels" className="px-6 py-2.5 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors flex items-center">

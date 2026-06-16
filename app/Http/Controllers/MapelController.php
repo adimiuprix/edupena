@@ -33,15 +33,20 @@ class MapelController extends Controller
         $validated = $request->validate([
             'category_mapels_id' => 'required|exists:category_mapels,id',
             'mata_pelajaran' => 'required|string|max:255',
+            'jenis_ekskul' => 'nullable|in:wajib,pilihan',
         ]);
 
-        $mapel = Mapel::create($validated);
+        $mapel = Mapel::create([
+            'category_mapels_id' => $validated['category_mapels_id'],
+            'mata_pelajaran' => $validated['mata_pelajaran'],
+        ]);
 
         // Jika category adalah ekstrakurikuler (id = 3), buat juga entry di extracurricular_categories
         if ($validated['category_mapels_id'] == 3) {
             ExtracurricularCategory::create([
                 'mapel_id' => $mapel->id,
                 'nama_ekskul' => $validated['mata_pelajaran'],
+                'jenis' => $validated['jenis_ekskul'] ?? 'pilihan',
             ]);
         }
 
@@ -51,9 +56,17 @@ class MapelController extends Controller
     public function edit(Mapel $mapel): Response
     {
         $categories = CategoryMapel::all();
+        
+        // Load data ekstrakurikuler jika mapel adalah ekstrakurikuler
+        $ekskul = null;
+        if ($mapel->category_mapels_id == 3) {
+            $ekskul = ExtracurricularCategory::where('mapel_id', $mapel->id)->first();
+        }
+        
         return Inertia::render('Mapels/Edit', [
             'mapel' => $mapel,
-            'categories' => $categories
+            'categories' => $categories,
+            'ekskul' => $ekskul,
         ]);
     }
 
@@ -62,14 +75,23 @@ class MapelController extends Controller
         $validated = $request->validate([
             'category_mapels_id' => 'required|exists:category_mapels,id',
             'mata_pelajaran' => 'required|string|max:255',
+            'jenis_ekskul' => 'nullable|in:wajib,pilihan',
         ]);
 
-        $mapel->update($validated);
+        $mapel->update([
+            'category_mapels_id' => $validated['category_mapels_id'],
+            'mata_pelajaran' => $validated['mata_pelajaran'],
+        ]);
 
-        // Jika category adalah ekstrakurikuler (id = 3), update nama_ekskul di extracurricular_categories
+        // Jika category adalah ekstrakurikuler (id = 3), update di extracurricular_categories
         if ($validated['category_mapels_id'] == 3) {
-            ExtracurricularCategory::where('mapel_id', $mapel->id)
-                ->update(['nama_ekskul' => $validated['mata_pelajaran']]);
+            ExtracurricularCategory::updateOrCreate(
+                ['mapel_id' => $mapel->id],
+                [
+                    'nama_ekskul' => $validated['mata_pelajaran'],
+                    'jenis' => $validated['jenis_ekskul'] ?? 'pilihan',
+                ]
+            );
         }
 
         return redirect()->route('mapels.index')->with('message', 'Mata Pelajaran berhasil diperbarui');
