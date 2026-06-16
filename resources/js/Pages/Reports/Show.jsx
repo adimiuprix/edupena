@@ -16,7 +16,7 @@ function getFase(tingkat) {
 
 function getTanggalCetak(settings) {
     const kota = settings.kabupaten_kota || 'Kota';
-    const tanggal = new Date().toLocaleDateString('id-ID', {
+    const tanggal = new Date('2026-06-20').toLocaleDateString('id-ID', {
         day: 'numeric', month: 'long', year: 'numeric',
     });
     return `${kota}, ${tanggal}`;
@@ -168,7 +168,7 @@ export default function Show({ student, rombel, semester, reportData, kehadiran,
                 <div className="section-divider"></div>
 
                 {/* ════════════════════════════════════════
-                    A. NILAI AKADEMIK
+                    A. NILAI AKADEMIK (PENDIDIKAN UMUM)
                 ════════════════════════════════════════ */}
                 <div className="section-title">A. Nilai Akademik</div>
                 <table className="tabel-nilai">
@@ -181,8 +181,8 @@ export default function Show({ student, rombel, semester, reportData, kehadiran,
                         </tr>
                     </thead>
                     <tbody>
-                        {reportData.filter(d => d.tipe !== 'ekskul').length > 0 ? (
-                            reportData.filter(d => d.tipe !== 'ekskul').map((data, index) => (
+                        {reportData.filter(d => d.tipe === 'akademik').length > 0 ? (
+                            reportData.filter(d => d.tipe === 'akademik').map((data, index) => (
                                 <tr key={index} className={index % 2 === 1 ? 'row-alt' : ''}>
                                     <td className="td-no">{index + 1}</td>
                                     <td className="td-mapel">{data.mapel}</td>
@@ -201,13 +201,44 @@ export default function Show({ student, rombel, semester, reportData, kehadiran,
                 <div className="section-divider"></div>
 
                 {/* ════════════════════════════════════════
-                    B. EKSKUL & C. KEHADIRAN
+                    B. MUATAN LOKAL
+                ════════════════════════════════════════ */}
+                {reportData.filter(d => d.tipe === 'mulok').length > 0 && (
+                    <>
+                        <div className="section-title">B. Muatan Lokal</div>
+                        <table className="tabel-nilai">
+                            <thead>
+                                <tr>
+                                    <th className="th-no">No</th>
+                                    <th className="th-mapel">Mata Pelajaran</th>
+                                    <th className="th-nilai">Nilai</th>
+                                    <th className="th-deskripsi">Capaian Kompetensi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {reportData.filter(d => d.tipe === 'mulok').map((data, index) => (
+                                    <tr key={index} className={index % 2 === 1 ? 'row-alt' : ''}>
+                                        <td className="td-no">{index + 1}</td>
+                                        <td className="td-mapel">{data.mapel}</td>
+                                        <td className="td-nilai">{data.nilai_akhir ?? '-'}</td>
+                                        <td className="td-deskripsi">{data.capaian_kompetensi || '-'}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+
+                        <div className="section-divider"></div>
+                    </>
+                )}
+
+                {/* ════════════════════════════════════════
+                    C. EKSKUL & D. KEHADIRAN
                 ════════════════════════════════════════ */}
                 <div className="ekskul-absen-wrapper">
 
-                    {/* B. Ekstrakurikuler */}
+                    {/* C. Ekstrakurikuler */}
                     <div className="ekskul-col">
-                        <div className="section-title">B. Ekstrakurikuler</div>
+                        <div className="section-title">C. Ekstrakurikuler</div>
                         <table className="tabel-ekskul">
                             <thead>
                                 <tr>
@@ -234,9 +265,9 @@ export default function Show({ student, rombel, semester, reportData, kehadiran,
                         </table>
                     </div>
 
-                    {/* C. Ketidakhadiran */}
+                    {/* D. Ketidakhadiran */}
                     <div className="absen-col">
-                        <div className="section-title">C. Ketidakhadiran</div>
+                        <div className="section-title">D. Ketidakhadiran</div>
                         <table className="tabel-absen">
                             <tbody>
                                 <tr>
@@ -265,7 +296,7 @@ export default function Show({ student, rombel, semester, reportData, kehadiran,
                     CATATAN WALI KELAS
                 ════════════════════════════════════════ */}
                 <div className="catatan-wrapper">
-                    <div className="section-title">D. Catatan Wali Kelas</div>
+                    <div className="section-title">E. Catatan Wali Kelas</div>
                     <div className="catatan-box">
                         <div className="catatan-lines">
                             {[...Array(2)].map((_, i) => (

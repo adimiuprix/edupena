@@ -131,11 +131,16 @@ class ReportController extends Controller
             $kkm = $kkmList->get($mapel->id);
             $nilaiKkm = $kkm?->nilai_kkm ?? 75;
 
+            // Ambil kategori mapel untuk menentukan tipe (Pendidikan Umum atau Mulok)
+            $kategori = $mapel->category->kategori ?? 'Pendidikan Umum';
+            $tipe = strtolower($kategori) === 'muatan lokal' ? 'mulok' : 'akademik';
+
             $reportData[] = [
                 'mapel'              => $mapel->mata_pelajaran,
                 'nilai_akhir'        => $nilaiAkhir,
                 'nilai_kkm'          => $nilaiKkm,
-                'tipe'               => 'akademik',
+                'tipe'               => $tipe,
+                'kategori'           => $kategori,
                 'capaian_kompetensi' => count($capaian) > 0
                     ? implode(". ", $capaian) . "."
                     : '-',
