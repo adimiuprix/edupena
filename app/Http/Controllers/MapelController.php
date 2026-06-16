@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Mapel;
 use App\Models\CategoryMapel;
+use App\Models\ExtracurricularCategory;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -34,7 +35,16 @@ class MapelController extends Controller
             'mata_pelajaran' => 'required|string|max:255',
         ]);
 
-        Mapel::create($validated);
+        $mapel = Mapel::create($validated);
+
+        // Jika category adalah ekstrakurikuler (id = 3), buat juga entry di extracurricular_categories
+        if ($validated['category_mapels_id'] == 3) {
+            ExtracurricularCategory::create([
+                'mapel_id' => $mapel->id,
+                'nama_ekskul' => $validated['mata_pelajaran'],
+            ]);
+        }
+
         return redirect()->route('mapels.index')->with('message', 'Mata Pelajaran berhasil ditambahkan');
     }
 
@@ -55,6 +65,13 @@ class MapelController extends Controller
         ]);
 
         $mapel->update($validated);
+
+        // Jika category adalah ekstrakurikuler (id = 3), update nama_ekskul di extracurricular_categories
+        if ($validated['category_mapels_id'] == 3) {
+            ExtracurricularCategory::where('mapel_id', $mapel->id)
+                ->update(['nama_ekskul' => $validated['mata_pelajaran']]);
+        }
+
         return redirect()->route('mapels.index')->with('message', 'Mata Pelajaran berhasil diperbarui');
     }
 
